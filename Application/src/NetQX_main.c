@@ -958,6 +958,15 @@ bool test_reader_loopback(u32 reader)
   }
 
 //=============================================================================
+void clear_door1_flags(void)
+  {
+  doors[0].Flags = 0;
+  allow_write = 2975;
+  update_internal_setup[0] = 1;
+  write_door_setup(0);
+  }
+
+//=============================================================================
 void check_for_system_resets_on_powerup(void)
   {
   u32 rdr4 = rdr4_active;
@@ -978,7 +987,7 @@ void check_for_system_resets_on_powerup(void)
     }
   else if (test_reader_loopback(3))
     {
-    self_test();
+    clear_door1_flags();
     }
   rdr4_active = rdr4;
   }

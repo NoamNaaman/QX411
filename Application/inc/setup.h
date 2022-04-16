@@ -9,6 +9,9 @@
 #define s8  int8_t
 #define s16 int16_t
 #define s32 int32_t
+#define u64 uint64_t
+#define s64 int64_t
+
 
 #define bool u8
 #define true 1
@@ -23,7 +26,8 @@
 
 
 
-#define SW_VERSION 211
+#define SW_VERSION 212
+// 212 2021-11-22 short on reader 4 middle pins on power up clears door 1 flags to get out of elevator mode
 // 211 2021-11-13 fixed elevator software
 // 210 2021-11-11 fixed USART2 interrupt problem
 // 209 2021-09-25 fixed flash read/write functionality
