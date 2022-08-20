@@ -2,6 +2,9 @@
 
 #include "setup.h"
 
+#define __JERUSALEM_MODE__ 0
+
+
 u8 zeros[MAX_DOORS], ones[MAX_DOORS];
 u32 raw_wiegand;
 
@@ -170,14 +173,13 @@ u32 extract_wiegand_key(u32 first, u32 digits, u8 *data)
   u8 digit, mask;
   first -= 1;
   number = 0;
-  reader_mode = dip_switches & 0x80;
   raw_wiegand = make32(data[3], data[2], data[1], data[0]);
-//  if (reader_mode == 0x80)
-//    {
-//    number = make32(0,0, data[2], data[3]); // HID Jerusalem municipality?
-//    return number;
-//    }
-  
+
+#if __JERUSALEM_MODE__ == 1
+    number = make32(0,0, data[2], data[3]); // HID Jerusalem municipality?
+    return number;
+#endif
+    
   while (first >= 8) // skip to first byte of data
     {
     first -= 8;
