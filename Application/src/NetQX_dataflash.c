@@ -115,12 +115,11 @@ void FlashBlockingXfr(u8 *TxBuff, u8 *RxBuff, u32 TxLen, u32 RxLen)
   FlashChipEnable();
 //  delay_us(1);
 
-//  HAL_SPI_Transmit(&hspi1, TxBuff, TxLen, TxLen);
+  HAL_SPI_Transmit(&hspi1, TxBuff, TxLen, TxLen);
 //  while (TxLen--)
 //    {
 //    byte = *TxBuff++;
 //    SPI1->DR = byte;
-    HAL_SPI_Transmit(&hspi1, TxBuff, TxLen, 1);
 //    while ((SPI1->SR & SPI_SR_TXE) == 0);
 //    delay_us(1);
 //    data = SPI1->DR;
@@ -378,8 +377,8 @@ void  FlashReadChipId(u8* pB)
   g_u8SpiOneTxBuff[M95M01_ADDR_TOP] = (u8)(u32Add >> 16);
   g_u8SpiOneTxBuff[M95M01_ADDR_MID] = (u8)(u32Add >> 8);
   g_u8SpiOneTxBuff[M95M01_ADDR_BOT] = (u8)(u32Add >> 0);
-  g_u32SpiOneTxLen = FLASH_SPI_SERVICE_INFO;
-  g_u32SpiOneRxLen = 512;
+  g_u32SpiOneTxLen = 1;
+  g_u32SpiOneRxLen = 3;
   
   g_pFlashReadDestPtr = pB;
   

@@ -47,7 +47,7 @@
 
 //-- 3 bytes address commands --//
 #define FLASH_READ_CHIP_ID            (0x83) // (0x9F) for Winbond
-#define FLASH_WRITE_CHIP_ID            (0x82)
+#define FLASH_WRITE_CHIP_ID           (0x82)
 #define FLASH_WRITE_ST_CMND           (0x01)
 #define FLASH_READ_ST_CMND            (0x05)
 #define FLASH_READ_FLST_CMND          (0x70)

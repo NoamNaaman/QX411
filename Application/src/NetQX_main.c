@@ -25,10 +25,14 @@ extern UART_HandleTypeDef huart2;
 extern IWDG_HandleTypeDef hiwdg;
 extern SPI_HandleTypeDef hspi1;
 
+u32 test_flash = 1;
+
 
 u16  event_index, event_counter;
 u16  event_report_index, event_report_count;
 u16  event_not_sent, event_next_send;
+
+
 
 u16  clear_apb_table;
 u8 fire_condition[MAX_DOORS];
@@ -1095,6 +1099,7 @@ void APP_main(void)
     {  
     test_relays();
     }
+  
   
   TestMemory();
 
