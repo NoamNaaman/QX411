@@ -115,12 +115,11 @@ void FlashBlockingXfr(u8 *TxBuff, u8 *RxBuff, u32 TxLen, u32 RxLen)
   FlashChipEnable();
 //  delay_us(1);
 
-//  HAL_SPI_Transmit(&hspi1, TxBuff, TxLen, TxLen);
+  HAL_SPI_Transmit(&hspi1, TxBuff, TxLen, TxLen);
 //  while (TxLen--)
 //    {
 //    byte = *TxBuff++;
 //    SPI1->DR = byte;
-    HAL_SPI_Transmit(&hspi1, TxBuff, TxLen, 1);
 //    while ((SPI1->SR & SPI_SR_TXE) == 0);
 //    delay_us(1);
 //    data = SPI1->DR;
@@ -246,7 +245,7 @@ void FlashWriteData(u32 u32Add, u32 u32Len, u8* pBuff)
 void FlashReadData(u32 u32Add, u32 u32Len, u8 *DestBuffer)
   {
   SelectFlashCS(u32Add);
-  u32Add &= 0x1FFFF; // adust address to 128K per chip
+//  u32Add &= 0x1FFFF; // adust address to 128K per chip FOR 1M CHIPS
 
   g_u8SpiOneTxBuff[FLASH_SPI_OFFSET_CMND ] = FLASH_READ_DATA_CMND;
   g_u8SpiOneTxBuff[M95M01_ADDR_TOP] = (u8)(u32Add >> 16);
@@ -621,14 +620,14 @@ void  InitExtFlash(void)
 /////////////////////////////////////////////////////////////////////
 void FlashChipEnable(void)
   {
-//  output_low(FLASH_CS1);
-  switch (FlashChipSelect)
-    {
-    case 0: output_low(EECS1); break;
-    case 1: output_low(EECS2); break;
-    case 2: output_low(EECS3); break;
-    case 3: output_low(EECS4); break;
-    }
+  output_low(EECS1);
+//  switch (FlashChipSelect)
+//    {
+//    case 0: output_low(EECS1); break;
+//    case 1: output_low(EECS2); break;
+//    case 2: output_low(EECS3); break;
+//    case 3: output_low(EECS4); break;
+//    }
   }
 
 /////////////////////////////////////////////////////////////////////

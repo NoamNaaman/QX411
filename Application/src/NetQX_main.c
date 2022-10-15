@@ -103,6 +103,7 @@ u16 MyAddress;
 
 u32 update_dt = 11;
 
+u32 main_loop_counter;
 
 u16 allow_write;                    
 
@@ -1107,6 +1108,8 @@ void APP_main(void)
   
   while (1)
     {
+    main_loop_counter++;
+    
     background_tasks();
     if ((Timer_5mS_Flags & Tmr_5mS_TOGGLE_LED))
       {
