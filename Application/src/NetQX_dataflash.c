@@ -220,7 +220,7 @@ void FlashWriteData(u32 u32Add, u32 u32Len, u8* pBuff)
   output_drive(SF_WP);
   output_high(SF_WP);
   SelectFlashCS(u32Add);
-  u32Add &= 0x1FFFF; // adust address to 128K per chip
+//  u32Add &= 0x1FFFF; // adjust address to 128K per chip
   
   NorFlashWriteRegCmnd(FLASH_WRITE_ENB_CMND);
   

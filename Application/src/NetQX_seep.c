@@ -5,6 +5,9 @@
 
 // Using Atmel serial EEPROM's (AT24C512B or AT24C1024B)
 
+//#define M95M01x4
+#define M95M04
+
 #define EE_PAGE 256
 
 u32 eeprom_write_timer;
