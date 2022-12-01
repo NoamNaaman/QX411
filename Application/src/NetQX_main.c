@@ -470,9 +470,12 @@ void lock_handler(void)
 //=============================================================================
 void execute_auto_unlock(u16 door)
   {
-  unlock_door(door);
-  auto_unlocked[door] = 1;
-  generate_event(door, 0, 0, EVT_Auto_door_open);
+  if (doors[door].DisableDoor != 0xDA)
+    {
+    unlock_door(door);
+    auto_unlocked[door] = 1;
+    generate_event(door, 0, 0, EVT_Auto_door_open);
+    }
   }
 
 //=============================================================================
@@ -505,6 +508,10 @@ void check_auto_unlock(void)
     if (aln > 0 && aln <= MAX_AL)
       {
 
+      if (doors[door].DisableDoor == 0xDA)
+        {
+        goto force_relock_door;
+        }
       if ((valid = check_time_zone(doors[door].AutoTZ)) != 0 && !auto_unlocked[door])
         {
         if (test_door_flag(door, LFLAG_1ST_VALID)) // first valid tag opens auto unlock
@@ -518,10 +525,11 @@ void check_auto_unlock(void)
         }
       else if (!valid)
         {
+relock_door:
         enable_first_user[door] = 0;
         if (auto_unlocked[door])
           {
- relock_door:
+force_relock_door:
           relock(door);
           generate_event(door, 0, 0, EVT_Auto_door_close);
           auto_unlocked[door] = 0;

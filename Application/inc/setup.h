@@ -26,7 +26,9 @@
 
 
 
-#define SW_VERSION 212
+#define SW_VERSION 221
+// 221 2022-11-16 added enable/disable auto unlock with MSG_UNLK 252/253
+// 220 2022-11-10 first version with M95M04 4Mb chip
 // 212 2021-11-22 short on reader 4 middle pins on power up clears door 1 flags to get out of elevator mode
 // 211 2021-11-13 fixed elevator software
 // 210 2021-11-11 fixed USART2 interrupt problem

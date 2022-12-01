@@ -923,6 +923,7 @@ void enable_unlock(u16 ix)
   allow_write = 2975;
   update_internal_setup[ix] = 1;
   generate_event(ix, 0,0, EVT_EnDoor);
+  auto_unlocked[ix] = 0;
   write_door_setup(ix);
   }
 
@@ -935,6 +936,7 @@ void disable_unlock(u16 ix)
   update_internal_setup[ix] = 1;
   write_door_setup(ix);
   generate_event(ix, 0, 0, EVT_DisDoor);
+  auto_unlocked[ix] = 0;
   if (unlock10[ix])
     {
     unlock10[ix] = 5;
@@ -987,7 +989,7 @@ void remote_unlock(u16 addressed_door)
   prev_door = addressed_door;
   prev_op = bx;
   
-  if (!auto_unlocked[addressed_door])
+//  if (!auto_unlocked[addressed_door])
     {
     if (!bx)
       {
@@ -1251,6 +1253,12 @@ bool process_message(void)
       }
     msg_type = get_next();
 
+    if (msg_type != MSG_SDTM)
+      {
+      __NOP();
+      }
+    
+    
     switch (msg_type)
       {
       case MSG_RQST:

@@ -382,12 +382,12 @@ void process_key(u32 source, u32 key, u16 special)
   output_high(LED_RED);
   output_high(LED_GREEN);
   
-  bool single_door = ((doors[0].Flags & LFLAG_2RDR_SINGLE_DOOR) != 0) || (analog_values[ANALOG_SINGLE_DOOR] < 500);
-  if (single_door && source != 0) // 2nd reader of single door?
-    {
-    source = 0;
-    door = 1;
-    }
+  bool single_door = ((doors[source].Flags & LFLAG_2RDR_SINGLE_DOOR) != 0) || (analog_values[ANALOG_SINGLE_DOOR] < 500);
+//  if (single_door && source != 0) // 2nd reader of single door?
+//    {
+//    source = 0;
+//    door = 1;
+//    }
 
   if (special == 1)
     {

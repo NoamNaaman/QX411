@@ -278,8 +278,12 @@ u8 WGND_wait(u32 reader)
       {
       clear_pin_wait(reader);
       }
-//    new_code:
-//    bytes = (BitCnt[reader]+ 7) / 8;
+    
+    for (u32 idx = 0; idx < 8; idx++)
+      {
+      reader_data[reader][idx] ^= 0xFF;
+      }
+    
     tag = extract_wiegand_key(doors[reader].First_digit, doors[reader].Number_of_digits, &reader_data[reader][0]);
     if (mul_t_lock)
       {
