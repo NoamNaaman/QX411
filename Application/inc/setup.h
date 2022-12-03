@@ -859,7 +859,7 @@ void IIC_Delay(void);
 void  init_IIC(void);
 void  IIC_Write_Cycle(void);
 bool IIC_Write(u8  send_bits);
-u8 IIC_ReadByte(void);
+u8 IIC_ReadByte(u8);
 void IIC_Start(void);
 void IIC_Stop(void);
 void IIC_SendAck(void);
