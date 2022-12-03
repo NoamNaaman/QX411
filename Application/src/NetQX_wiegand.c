@@ -242,11 +242,17 @@ u8 WGND_wait(u32 reader)
         BitCnt[reader] = 0;
         if (digit < 10) 
           {     // 0 to 9
+#if __LOCKER_SYSTEM__ == 1      
+          add_digit_to_lock_number(digit); // collect digits for locker number ID
+#endif
           digit <<= (8 - ++collected_digits[reader]) * 4;
           collected_pin[reader] |= digit;
           }
         else
           {     // this is either * or #
+#if __LOCKER_SYSTEM__ == 1      
+          process_locker_number();
+#else          
           while (collected_digits[reader] < 9)
             {
             digit = (u32)15 << (8 - ++collected_digits[reader]) * 4;
@@ -267,6 +273,7 @@ u8 WGND_wait(u32 reader)
             {
             generate_event(reader, pin_key_rec[reader].ID, pin_key_rec[reader].Code, EVT_wrong_PIN_code);
             }
+#endif          
           clear_pin_wait(reader);
           }
         }

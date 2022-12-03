@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 221
+#define SW_VERSION 21
+//  21 2022-12-03 first version for locker system with LOCKER6 cards
 // 221 2022-11-16 added enable/disable auto unlock with MSG_UNLK 252/253
 // 220 2022-11-10 first version with M95M04 4Mb chip
 // 212 2021-11-22 short on reader 4 middle pins on power up clears door 1 flags to get out of elevator mode
@@ -46,6 +47,14 @@
 // 134 - added EVT_RemoteLeaveDoorOpen = event 142 for UNLK 255. ignore extra UNLK commands.
 // 133 - added event 140 - enable/disable door unlock
 // 132 - changed event numbers according to Daniel's request
+
+
+#define __LOCKER_SYSTEM__ 1
+
+
+
+
+
 
 //========== STM32 housekeeping functions ===================================
 // I/O pin functionality definitions for use with SetPinMode()
@@ -322,7 +331,7 @@ typedef struct  {
 #define LFLAG_IGNORE_FORCED_DOOR  0x00200000    // do not issue EVT_FORCED_DOOR event message
 #define LFLAG_2RDR_SINGLE_DOOR    0x00400000    // apply input from two reader to a single door
 #define LFLAG_ELEVATOR_CONTROL    0x00800000    // elevator control
-
+//#define LFLAG_LOCKER_SYSTEM       0x01000000    // locker system meaning user presents a tag, followed by a PIN code specifying a specific locker
 
 //============ serial RAM addresses ========================
 #define ADDR_EVENT_FL_INDEX     32  // 2 byte address of next FLASH block to be filled with events

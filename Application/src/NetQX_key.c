@@ -7,6 +7,7 @@ u32 latest_key_data, key_checked;
 
 u32 key_delay_timer[MAX_DOORS];
 
+u32 locker_access_level;
 
 
 extern u32 elevator_system, WiegandReader2[];
@@ -16,6 +17,7 @@ void operate_relay(u32 relay, u32 onoff);
 void send_locker_unlock_time(void);
 bool Reader2IsSource(u32 door);
 void ClearReader2(u32 door);
+bool check_locker_validity(u32 locker, u32 aln);
 
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
@@ -144,6 +146,10 @@ bool check_access_level(u32 door, u32 aln)
   AL_RECORD al;
   u32 mask, albyteX, nibbleX;
   u32 idx;
+
+#if __LOCKER_SYSTEM__ == 1      
+  return true;
+#endif
   
   if (!aln)
     {
@@ -154,6 +160,36 @@ bool check_access_level(u32 door, u32 aln)
   nibbleX = (MyAddress - 1)  & 7;
   nibbleX = (nibbleX >= 4) ? 4 : 0;
   mask = 1 << (door + nibbleX);
+  DB_load_access_level(aln, &al);
+  for (idx = 0; idx < 2; idx++)
+    {
+    if (al.ValidDoor[idx][albyteX] & mask) // check if door is valid selection
+      {
+      valid_door_found = 1;
+      if (check_time_zone(al.weekzone[idx])) //from/to time check
+        {
+        return 1;
+        }
+      }
+    }
+  return 0;
+  }
+
+//--------------------------------------------------------------------------
+bool check_locker_validity(u32 locker, u32 aln)
+  {
+  AL_RECORD al;
+  u32 mask, albyteX, nibbleX;
+  u32 idx;
+
+  if (!aln)
+    {
+    return 0;
+    }
+  
+  locker--; // adjust locker # to zero base
+  albyteX = locker >> 3;
+  mask = 1 << (locker & 7);
   DB_load_access_level(aln, &al);
   for (idx = 0; idx < 2; idx++)
     {
@@ -362,6 +398,9 @@ void process_key(u32 source, u32 key, u16 special)
   bool personal;
   u16 mask, current_count, threshold, dual_reader, door = 0;
   bool second_reader = Reader2IsSource(source);
+  u32 locker_number;
+  
+  locker_number = key;
   
   latest_key_data = key;
   
@@ -510,6 +549,8 @@ void process_key(u32 source, u32 key, u16 special)
       return;
       }
     
+    locker_access_level = key_rec.al[0];
+    
     if (check_access_level((u16)source, (u16)key_rec.al[0]))
       {
       goto continue_checking;
@@ -612,14 +653,34 @@ void process_key(u32 source, u32 key, u16 special)
       
       // tag found
       // check if PIN code needed
+#if __LOCKER_SYSTEM__ != 1      
       if (!pin_only_mode(source) && test_door_flag(source, LFLAG_PIN_CODE))
+#endif
         {
         start_pin_code_wait(source, index, &key_rec);
+#if __LOCKER_SYSTEM__ == 1      
+        init_locker_display();
+#endif
         return;
         }
       
-      tag_approved:
+tag_approved:
       ClearReader2(source);
+      
+#if __LOCKER_SYSTEM__ == 1
+      if (check_locker_validity(locker_number, locker_access_level))
+        {
+        send_locker_unlock_command(locker_number - 1);
+        generate_event(source, key_rec.ID, key, EVT_Valid_Entry);
+        display_locker_open();
+        }
+      else
+        {
+        display_invalid_locker();
+        generate_event(source, key_rec.ID, key, EVT_Invalid_door);
+        }
+      return;
+#endif
       
       if (test_door_flag(source, LFLAG_EXIT) || second_reader)                           // is this door an exit door?
         { // this is an exit                                                            // YES.

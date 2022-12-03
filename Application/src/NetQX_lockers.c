@@ -5,6 +5,35 @@
 #include "stdio.h"
 
 u32 locker_unlocked[64];
+u32 locker_number;
+
+//-----------------------------------------------------------------------------
+void add_digit_to_lock_number(u32 digit)
+  {
+  locker_number = locker_number * 10 + digit;
+  }
+
+//-----------------------------------------------------------------------------
+void init_locker_display(void)
+  {
+  locker_number = 0;
+  }
+
+//-----------------------------------------------------------------------------
+void display_invalid_locker(void)
+  {
+  }
+
+//-----------------------------------------------------------------------------
+void display_locker_open(void)
+  {
+  }
+
+//-----------------------------------------------------------------------------
+void process_locker_number(void)
+  {
+  process_key(0, locker_number, 1);
+  }
 
 //-----------------------------------------------------------------------------
 void send_to_lockers(u32 door, u8 command, char *param)
