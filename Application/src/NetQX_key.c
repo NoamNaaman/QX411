@@ -422,11 +422,6 @@ void process_key(u32 source, u32 key, u16 special)
   output_high(LED_GREEN);
   
   bool single_door = ((doors[source].Flags & LFLAG_2RDR_SINGLE_DOOR) != 0) || (analog_values[ANALOG_SINGLE_DOOR] < 500);
-//  if (single_door && source != 0) // 2nd reader of single door?
-//    {
-//    source = 0;
-//    door = 1;
-//    }
 
   if (special == 1)
     {
@@ -468,10 +463,6 @@ void process_key(u32 source, u32 key, u16 special)
     }
   
   last_key_to[source] = 6; // in 100 mS increments
-  //  if (rdr4_active)
-  //    {
-  //    last_key_to[source] = 11;
-  //    }
   UserKeyReady[source] = 0;
   
   //  if (doors[source].Unlock_time && unlock10[source])  //NN 120822 V10
@@ -485,7 +476,6 @@ void process_key(u32 source, u32 key, u16 special)
       }
     }
   
-  // 
   if (test_door_flag(source, LFLAG_2RDR_SINGLE_DOOR) && // is this a dual reader, two man rule door?
       test_door_flag(source, LFLAG_TWO_MAN))            // if true and ...
     {

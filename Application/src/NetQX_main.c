@@ -16,7 +16,16 @@ void EEPROM_SPI_INIT(SPI_HandleTypeDef * hspi);
 void add_keys_to_DB(void);
 void init_rdr4(void);
 void handle_rdr4(void);
-  
+
+void test_relays(void);
+void TestMemory(void);
+void initUart2(void);
+void ssd1306_Init(void);
+void init_locker_display(void);
+void init_ports(void);
+void init_IOs(void);
+void init_i2c(void);
+void display_present_tag(void);
 
 
 extern u32   dip_switches, seconds_from_reset;
@@ -1096,7 +1105,6 @@ void APP_main(void)
   u16 toggle_led = 0, ix, fire_seconds_ctr = 0;
   u16 update_door_locals = 0xFF;
   u32 check_all_relays = 0;
-  u32 maxa = max_addr;
   Init_APP_main();
   
 
@@ -1113,6 +1121,13 @@ void APP_main(void)
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
   __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
 
+#if __LOCKER_SYSTEM__ == 1
+  init_i2c();
+  ssd1306_Init();
+  init_locker_display();
+  display_present_tag();
+#endif  
+  
   
   while (1)
     {

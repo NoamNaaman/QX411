@@ -27,16 +27,17 @@ const u32 Tmr_10mS_LEDS1        =  32;
 const u32 Tmr_10mS_INT_BUZZER   =  64;  
 const u32 Tmr_10mS_RDR4_TIME    = 128;  
  
-const u32 Tmr_100mS_CLEAR_APB   =   1;  
-const u32 Tmr_100mS_KEYS        =   2;  
-const u32 Tmr_100mS_UPDT        =   4;  
-const u32 Tmr_100mS_RDR_LEDS    =   8;  
-const u32 Tmr_100mS_SCAN        =  16;  
-const u32 Tmr_100mS_AUTOLOCK    =  32;  
-const u32 Tmr_100mS_RDR_BUZZERS =  64;  
-const u32 Tmr_100mS_NO_COMM     = 128;  
-const u32 Tmr_100mS_SAMPLE      = 256;
-const u32 Tmr_100mS_AUX_RELAYS  = 512;
+const u32 Tmr_100mS_CLEAR_APB   =    1;  
+const u32 Tmr_100mS_KEYS        =    2;  
+const u32 Tmr_100mS_UPDT        =    4;  
+const u32 Tmr_100mS_RDR_LEDS    =    8;  
+const u32 Tmr_100mS_SCAN        =   16;  
+const u32 Tmr_100mS_AUTOLOCK    =   32;  
+const u32 Tmr_100mS_RDR_BUZZERS =   64;  
+const u32 Tmr_100mS_NO_COMM     =  128;  
+const u32 Tmr_100mS_SAMPLE      =  256;
+const u32 Tmr_100mS_AUX_RELAYS  =  512;
+const u32 Tmr_100mS_LOCKER_DSP  = 1024;
 
 const u32 Tmr_1sec_AUTOLOCK     =   1;  
 const u32 Tmr_1sec_DOOR_AJAR    =   2;  

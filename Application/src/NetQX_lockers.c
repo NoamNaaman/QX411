@@ -5,28 +5,69 @@
 #include "stdio.h"
 
 u32 locker_unlocked[64];
-u32 locker_number;
+u32 locker_number, locker_digitX, locker_display_timer;
+
+
+void put_string(u32 x, u32 y, u32 font_size, char *string);
+void clear_screen(void);
+
+
+
+//----------------------------------------------------------------------------
+void init_locker_disp_timer(void)
+  {
+  locker_display_timer = 100; // 10 seconds
+  }
 
 //-----------------------------------------------------------------------------
 void add_digit_to_lock_number(u32 digit)
   {
+  char buf[4];
+  buf[0] = digit + '0';
+  buf[1] = 0;
   locker_number = locker_number * 10 + digit;
+  put_string(60 + locker_digitX++ * 10, 0, 18, buf);
+  
   }
 
 //-----------------------------------------------------------------------------
 void init_locker_display(void)
   {
   locker_number = 0;
+  locker_digitX = 0;
+  clear_screen();
+  delay_ms(10);
   }
 
 //-----------------------------------------------------------------------------
 void display_invalid_locker(void)
   {
+  clear_screen();
+  put_string(0, 0, 18, "Invalid locker");
+  init_locker_disp_timer();
+  }
+
+//-----------------------------------------------------------------------------
+void display_present_tag(void)
+  {
+  clear_screen();
+  put_string(0, 0, 18, "Present tag");
   }
 
 //-----------------------------------------------------------------------------
 void display_locker_open(void)
   {
+  clear_screen();
+  put_string(0, 0, 18, "Locker open");
+  init_locker_disp_timer();
+  }
+
+//-----------------------------------------------------------------------------
+void display_locker_query(void)
+  {
+  clear_screen();
+  put_string(0, 0, 18, "Lock#:");
+  init_locker_disp_timer();
   }
 
 //-----------------------------------------------------------------------------
@@ -81,183 +122,18 @@ void send_locker_unlock_time(void)
   }
 
 //----------------------------------------------------------------------------
-
-#if 0
-
-u32 next_inbyte2;
-
-u8 get_next2(void)
+void manage_locker_display(void)
   {
-  return COM2_buf[next_inbyte2++];
-  }
-
-void skip_space(void)
-  {
-  while (COM2_buf[next_inbyte2] && COM2_buf[next_inbyte2] == ' ')
-    next_inbyte2++;
-  }
-
-u32 get_str_integer(void)
-  {
-  u32 acc = 0;
-  skip_space();
-  while (isdigit(COM2_buf[next_inbyte2]))
+  if (locker_display_timer)
     {
-    acc = acc * 10 + (COM2_buf[next_inbyte2++] - '0');
-    }
-  return acc;
-  }
-
-u32 get_hex(u8 *ptr)
- {
- u32 acc = 0;
- while (isxdigit(*ptr))
-   {
-   if (*ptr <= '9')
-     acc = acc * 16 + (*ptr++ - '0');
-   else
-     acc = acc * 16 + (*ptr++ - 'A' + 10);
-   }
- return acc;
- }
-
-check_iox_checksum(void)
-  {
-  u32 idx, ccheck = 0, rcheck;
-  idx = 0;
-  while (COM2_buf[idx] != ';')
-    {
-    ccheck += COM2_buf[idx++];
-    }
-  idx++; // skip ;
-  rcheck = get_hex(&COM2_buf[idx]);
-  return (ccheck & 255) == (rcheck & 255);
-  }
-
-void process_iox16(void)
-  {
-  u32 addr, index;
-  u8 status, stat, reader_data[8];
-  u32 tag;
-  if (COM2_buf[0] == '#')
-    {
-    if (check_iox_checksum() == 0)
+    if ((Timer_100mS_Flags & Tmr_100mS_LOCKER_DSP) != 0)
       {
-      return;
-      }
-    next_inbyte2 = 1;
-    addr = get_str_integer();
-    skip_space();
-    status = get_next2();
-    switch (status)
-      {
-      case 'T': // new tag
-        skip_space();
-        tag = 0;
-        index = 0;
-        while (1)
-          {
-          stat = get_next2();
-          if (isxdigit(stat))
-            {
-            if (isdigit(stat))
-              stat -= '0';
-            else
-              stat = (stat - 'A') + 10;
-            tag <<= 4;
-            tag |= stat;
-            if ((++index & 1) == 0)
-              {
-              reader_data[index >> 1] = tag & 0xFF;
-              }  
-            }
-          else
-            {
-            break;
-            }
-          }
-        addr &= 127;
-//        if (tag != previous_tag[addr])
-          {
-          tag = extract_wiegand_key(doors[0].first_digit, doors[0].number_of_digits, &reader_data[1]);
-          process_key(addr, tag, 0);
-          }
-        previous_tag[addr] = tag;
-        tag_timeout[addr] = 10;
-        break;
-      case 'P': // present
-        break;
-      case 'S':
-        skip_space();
-        for (index = 0; index < 16; index++)
-          {
-          stat = get_next2();
-          if (stat < 0x80)
-            {
-            stat -= 'A';
-            locker_status[addr + index] = stat;
-            }
-          }
-        break;
-      }
-    }
-  }
-
-
-void handle_IOX16_messages(void)
-  {
-  u8 chr;
-  while (COM2_rcnt)
-    {
-    if (IOX16_state == 0)
-      {
-      chr = COM2_get_chr();
-      if (chr == X16PREAMB)
+      Timer_100mS_Flags &= Tmr_100mS_LOCKER_DSP;
+      if (--locker_display_timer == 0)
         {
-        if (prev_char2 == X16PREAMB)
-          {
-          packet_idx2 = 0;
-          COM2_buf[packet_idx2++] = X16PREAMB;
-          IOX16_state = 1;
-          }
-        }
-      prev_char2 = chr;
-      }
-    else if (IOX16_state == 1)
-      {
-      chr = COM2_get_chr();
-      COM2_buf[packet_idx2++] = chr;
-      if (packet_idx > 32)
-        {
-        IOX16_state = 0;
-        }
-      else if (chr == '\r')
-        {
-        COM2_buf[packet_idx2] = 0;
-        process_iox16();
-        IOX16_state = 0;
-        }
-      prev_char2 = chr;
-      }
-    else
-      {
-      IOX16_state = 0;
-      }
-    }
-  if (TMR_10MS_CHECK_TIMEOUT)
-    {
-    TMR_10MS_CHECK_TIMEOUT = 0;
-    if (tag_timeout[scan_reader_timeout])
-      {
-      if (!--tag_timeout[scan_reader_timeout])
-        {
-        previous_tag[scan_reader_timeout] = 0;
+        init_locker_display();
+        display_present_tag();
         }
       }
-    if (++scan_reader_timeout > 64)
-      {
-      scan_reader_timeout = 0;
-      }
     }
   }
-#endif

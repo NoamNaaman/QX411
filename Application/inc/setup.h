@@ -459,7 +459,7 @@ extern bool MCR_TrackOne1[MAX_DOORS]; //     ; // = RDRstate1.5 // collect track
 
 
 
-#define SCL GPIOD,2
+#define SCL GPIOE,1
 #define SDA GPIOD,1
 
 
@@ -940,16 +940,17 @@ extern const u32 Tmr_10mS_LEDS1         ; // 32
 extern const u32 Tmr_10mS_INT_BUZZER    ; // 64
 extern const u32 Tmr_10mS_RDR4_TIME     ; //128
 
-extern const u32 Tmr_100mS_CLEAR_APB    ; //  1
-extern const u32 Tmr_100mS_KEYS         ; //  2
-extern const u32 Tmr_100mS_UPDT         ; //  4
-extern const u32 Tmr_100mS_RDR_LEDS     ; //  8
-extern const u32 Tmr_100mS_SCAN         ; // 16
-extern const u32 Tmr_100mS_AUTOLOCK     ; // 32
-extern const u32 Tmr_100mS_RDR_BUZZERS  ; // 64
-extern const u32 Tmr_100mS_NO_COMM      ; //128
-extern const u32 Tmr_100mS_SAMPLE       ; //256
-extern const u32 Tmr_100mS_AUX_RELAYS   ; //512
+extern const u32 Tmr_100mS_CLEAR_APB    ; //   1
+extern const u32 Tmr_100mS_KEYS         ; //   2
+extern const u32 Tmr_100mS_UPDT         ; //   4
+extern const u32 Tmr_100mS_RDR_LEDS     ; //   8
+extern const u32 Tmr_100mS_SCAN         ; //  16
+extern const u32 Tmr_100mS_AUTOLOCK     ; //  32
+extern const u32 Tmr_100mS_RDR_BUZZERS  ; //  64
+extern const u32 Tmr_100mS_NO_COMM      ; // 128
+extern const u32 Tmr_100mS_SAMPLE       ; // 256
+extern const u32 Tmr_100mS_AUX_RELAYS   ; // 512
+extern const u32 Tmr_100mS_LOCKER_DSP   ; //1024
 
 extern const u32 Tmr_1sec_AUTOLOCK      ; //  1
 extern const u32 Tmr_1sec_DOOR_AJAR     ; //  2
