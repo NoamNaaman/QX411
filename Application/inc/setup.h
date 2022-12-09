@@ -459,8 +459,8 @@ extern bool MCR_TrackOne1[MAX_DOORS]; //     ; // = RDRstate1.5 // collect track
 
 
 
-#define SCL GPIOE,1
-#define SDA GPIOD,1
+#define SCL GPIOE,1 // OLED I2C SCL
+#define SDA GPIOD,1 // OLED I2C SDA
 
 
 
