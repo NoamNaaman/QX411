@@ -633,6 +633,7 @@ void background_tasks(void)
   get_analog_inputs();
   battery_handler();
   buzzer_handler();
+  manage_locker_display();
   }
 
 //=============================================================================

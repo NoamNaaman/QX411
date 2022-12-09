@@ -650,6 +650,7 @@ void process_key(u32 source, u32 key, u16 special)
         start_pin_code_wait(source, index, &key_rec);
 #if __LOCKER_SYSTEM__ == 1      
         init_locker_display();
+        display_locker_query();
 #endif
         return;
         }
@@ -661,13 +662,13 @@ tag_approved:
       if (check_locker_validity(locker_number, locker_access_level))
         {
         send_locker_unlock_command(locker_number - 1);
-        generate_event(source, key_rec.ID, key, EVT_Valid_Entry);
+        generate_event(locker_number - 1, key_rec.ID, key, EVT_Valid_Entry);
         display_locker_open();
         }
       else
         {
         display_invalid_locker();
-        generate_event(source, key_rec.ID, key, EVT_Invalid_door);
+        generate_event(locker_number - 1, key_rec.ID, key, EVT_Invalid_door);
         }
       return;
 #endif

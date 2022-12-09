@@ -43,7 +43,7 @@ void init_locker_display(void)
 void display_invalid_locker(void)
   {
   clear_screen();
-  put_string(0, 0, 18, "Invalid locker");
+  put_string(0, 0, 10, "Invalid locker");
   init_locker_disp_timer();
   }
 
@@ -128,7 +128,7 @@ void manage_locker_display(void)
     {
     if ((Timer_100mS_Flags & Tmr_100mS_LOCKER_DSP) != 0)
       {
-      Timer_100mS_Flags &= Tmr_100mS_LOCKER_DSP;
+      Timer_100mS_Flags &= ~Tmr_100mS_LOCKER_DSP;
       if (--locker_display_timer == 0)
         {
         init_locker_display();
