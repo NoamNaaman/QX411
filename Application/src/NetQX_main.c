@@ -924,7 +924,7 @@ void test_comm(void)
 void send_test_text(void)
   {
   u8 buf[40];
-  sprintf((char *)buf, "NetDX V%lu\r\n", SW_VERSION);
+  sprintf((char *)buf, "NetQX V%lu\r\n", SW_VERSION);
   COM1_send_string(buf);
   }
 

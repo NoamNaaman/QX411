@@ -465,6 +465,7 @@ extern bool MCR_TrackOne1[MAX_DOORS]; //     ; // = RDRstate1.5 // collect track
 
 
 #define ETH_RST             GPIOD,3
+#define RS485B_EN           GPIOD,3
 
 #define DIP3                 GPIOE,3
 #define DIP4                 GPIOE,4

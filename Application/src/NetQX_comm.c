@@ -89,12 +89,7 @@ bool COM1_char_ready(void)
 //-----------------------------------------------------------------------------
 bool CommCharReady(void)
   {
-  if (elevator_system)
-    {
-    return get_comm_buffer_status(2);
-    }
-  
-  return get_comm_buffer_status(1) || get_comm_buffer_status(2);
+  return get_comm_buffer_status(2);
   }
 
 //-----------------------------------------------------------------------------
@@ -180,17 +175,8 @@ bool COM1_send_packet(u8 dest, u8 source, u32 length)
 
 //  output_high(X_RS485EN);
   
-  if (!elevator_system) // regular system
-    {
-    output_high(RS485_EN); // enable RS485 transmit
-    RS485_sending = 1;
-    delay_us(20);
-    }
-  else // elevator system
-    {
-//    output_high(XPORT_EN);
-    delay_us(10);
-    }
+  output_high(RS485B_EN); // enable RS485 transmit
+  delay_us(10);
   bp = comm_tbuf;
   transmit_char(0);
   delay_us(50);
@@ -201,19 +187,10 @@ bool COM1_send_packet(u8 dest, u8 source, u32 length)
     delay_us(30);
     }
   delay_us(10);
-  if (!elevator_system)
-    {
-    output_low(RS485_EN); // disable transmit
-    RS485_sending = 0;
-    flush_rx_buffer(1);
-    }
-
-//  output_low(X_RS485EN);
+  output_low(RS485B_EN); // disable transmit
+  RS485_sending = 0;
+  flush_rx_buffer(1);
   
-//  if (elevator_system) // regular system
-//    {
-//    output_low(XPORT_EN);
-//    }
   return !fail;
   }
 
@@ -225,7 +202,7 @@ void COM1_send_string(u8 *bp)
  last_function = 5;
   if (!elevator_system)
     {
-    output_high(RS485_EN); // enable transmit
+    output_high(RS485B_EN); // enable transmit
     delay_us(100);
     }
   while (*bp)
@@ -237,7 +214,7 @@ void COM1_send_string(u8 *bp)
   delay_us(50);
   if (!elevator_system)
     {
-    output_low(RS485_EN); // disable transmit
+    output_low(RS485B_EN); // disable transmit
     flush_rx_buffer(1);
     }
   }
@@ -262,23 +239,21 @@ void  COM1_send_ack(u8 source, u8 Destination)
   COM1_rxi = COM1_rxo = COM1_rcnt = 0;
 
   length = 9;
-
-  if (Ethernet_active != 12345)
-    {
-    output_high(RS485_EN); // enable transmit
-    delay_us(10);
-    }
+  
+  output_high(RS485B_EN); // enable transmit on USART2 TX/RX
+  delay_us(10);
+  
   bp = comm_tbuf;
   next = 0;
   RS485_sending = 1;
   while (length--)
     {
     transmit_char(next);
-    next = *bp++; // buf[idx++];
+    next = *bp++; 
     delay_us(30);
     }
   delay_us(10);
-  output_low(RS485_EN); // disable transmit
+  output_low(RS485B_EN); // disable transmit
   RS485_sending = 0;
   flush_rx_buffer(1);
   }
@@ -288,7 +263,8 @@ void COM1_init(void)
   {
  last_function = 7;
   flush_rx_buffer(1);
-  output_low(RS485_EN); // disable transmit
+  output_low(RS485B_EN); // disable transmit
+  output_drive(RS485B_EN);
   comm_timer = 0;
   packet_idx = 0;
   comm_state = 0;
