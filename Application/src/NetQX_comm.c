@@ -652,6 +652,7 @@ void get_door_record(u32 addressed_door)
     {
     WGND_init(addressed_door);
     }
+//  generate_event(addressed_door, 0, 0, EVT_DoorSetupChanged);
   }
 
 //=============================================================================================
