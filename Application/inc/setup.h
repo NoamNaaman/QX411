@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 221
+#define SW_VERSION 222
+// 222 2022-12-12 changed pin code from left justified HEX number to decimal (NetQX_wiegand.c)
 // 221 2022-11-16 added enable/disable auto unlock with MSG_UNLK 252/253
 // 220 2022-11-10 first version with M95M04 4Mb chip
 // 212 2021-11-22 short on reader 4 middle pins on power up clears door 1 flags to get out of elevator mode

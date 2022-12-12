@@ -3,7 +3,7 @@
 #include "setup.h"
 
 #define __JERUSALEM_MODE__ 0
-
+#define __HEX_NUMBER__ 0
 
 u8 zeros[MAX_DOORS], ones[MAX_DOORS];
 u32 raw_wiegand;
@@ -242,16 +242,22 @@ u8 WGND_wait(u32 reader)
         BitCnt[reader] = 0;
         if (digit < 10) 
           {     // 0 to 9
+#if __HEX_NUMBER__ == 1          
           digit <<= (8 - ++collected_digits[reader]) * 4;
           collected_pin[reader] |= digit;
+#else
+          collected_pin[reader] = collected_pin[reader] * 10 + digit;
+#endif          
           }
         else
           {     // this is either * or #
+#if __HEX_NUMBER__ == 1          
           while (collected_digits[reader] < 9)
             {
             digit = (u32)15 << (8 - ++collected_digits[reader]) * 4;
             collected_pin[reader] |= digit;
             }
+#endif          
           digit = collected_pin[reader];
           if (pin_only_mode(reader))
             {
