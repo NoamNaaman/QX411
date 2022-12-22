@@ -51,7 +51,7 @@ void display_invalid_locker(void)
 void display_present_tag(void)
   {
   clear_screen();
-  put_string(0, 0, 18, "Present tag");
+  put_string(0, 0,  18, "Present tag");
   }
 
 //-----------------------------------------------------------------------------

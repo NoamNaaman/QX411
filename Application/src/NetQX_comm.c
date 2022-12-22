@@ -89,7 +89,7 @@ bool COM1_char_ready(void)
 //-----------------------------------------------------------------------------
 bool CommCharReady(void)
   {
-  return get_comm_buffer_status(2);
+  return get_comm_buffer_status(1);
   }
 
 //-----------------------------------------------------------------------------
