@@ -95,7 +95,7 @@ extern SPI_HandleTypeDef SSD1306_SPI_PORT;
 
 // SSD1306 OLED height in pixels
 #ifndef SSD1306_HEIGHT
-#define SSD1306_HEIGHT          32
+#define SSD1306_HEIGHT          64
 #endif
 
 // SSD1306 width in pixels

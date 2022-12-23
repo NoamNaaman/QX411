@@ -3,6 +3,7 @@
 #include "setup.h"
 #include "serial.h"
 #include "stdio.h"
+#include "ssd1306.h"
 
 u32 locker_unlocked[64];
 u32 locker_number, locker_digitX, locker_display_timer;
@@ -52,6 +53,9 @@ void display_present_tag(void)
   {
   clear_screen();
   put_string(0, 0,  18, "Present tag");
+//  ssd1306_DrawRectangle(0,0,127,63,White);
+//  ssd1306_Fill(White);
+//  ssd1306_UpdateScreen();
   }
 
 //-----------------------------------------------------------------------------

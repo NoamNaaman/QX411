@@ -94,11 +94,11 @@ SSD1306_Error_t ssd1306_FillBuffer(uint8_t* buf, uint32_t len)
 // Initialize the oled screen
 void ssd1306_Init(void) 
   {
-  // Reset OLED
-  ssd1306_Reset();
-  
-  // Wait for the screen to boot
-  HAL_Delay(100);
+//  // Reset OLED
+//  ssd1306_Reset();
+//  
+//  // Wait for the screen to boot
+//  HAL_Delay(100);
   
   // Init OLED
   ssd1306_SetDisplayOn(0); //display off
@@ -108,7 +108,8 @@ void ssd1306_Init(void)
   // 10b,Page Addressing Mode (RESET); 11b,Invalid
   
   ssd1306_WriteCommand(0xB0); //Set Page Start Address for Page Addressing Mode,0-7
-  
+
+//#define SSD1306_MIRROR_VERT  
 #ifdef SSD1306_MIRROR_VERT
   ssd1306_WriteCommand(0xC0); // Mirror vertically
 #else
@@ -122,11 +123,14 @@ void ssd1306_Init(void)
   
   ssd1306_SetContrast(0xFF);
   
-#ifdef SSD1306_MIRROR_HORIZ
-  ssd1306_WriteCommand(0xA0); // Mirror horizontally
-#else
-  ssd1306_WriteCommand(0xA1); //--set segment re-map 0 to 127 - CHECK
-#endif
+//#define SSD1306_MIRROR_HORIZ
+//#ifdef SSD1306_MIRROR_HORIZ
+//  ssd1306_WriteCommand(0xA0); // Mirror horizontally
+//#else
+//  ssd1306_WriteCommand(0xA1); //--set segment re-map 0 to 127 - CHECK
+//#endif
+  ssd1306_WriteCommand(0xA2); //--set segment re-map 0 to 127 - CHECK
+
   
 #ifdef SSD1306_INVERSE_COLOR
   ssd1306_WriteCommand(0xA7); //--set inverse color
@@ -273,11 +277,16 @@ char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color)
     b = Font.data[(ch - 32) * Font.FontHeight + i];
     for (j = 0; j < Font.FontWidth; j++) 
       {
-      if((b << j) & 0x8000)  {
-      ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
-      } else {
-      ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR)!color);
-      }
+      if ((b << j) & 0x8000)  
+        {
+//        ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
+        ssd1306_DrawPixel(SSD1306.CurrentY + i, (SSD1306.CurrentX + j), (SSD1306_COLOR) color);
+        }
+      else 
+        {
+//        ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR)!color);
+        ssd1306_DrawPixel(SSD1306.CurrentY + i, (SSD1306.CurrentX + j), (SSD1306_COLOR) !color);
+        }
       }
     }
   
@@ -356,7 +365,7 @@ void ssd1306_Line(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, SSD1306_COLOR 
 void ssd1306_Polyline(const SSD1306_VERTEX *par_vertex, uint16_t par_size, SSD1306_COLOR color) 
   {
   uint16_t i;
-  if(par_vertex != 0)
+  if (par_vertex != 0)
     {
     for(i = 1; i < par_size; i++)
       {
@@ -379,7 +388,7 @@ static float ssd1306_DegToRad(float par_deg)
 static uint16_t ssd1306_NormalizeTo0_360(uint16_t par_deg) 
   {
   uint16_t loc_angle;
-  if(par_deg <= 360)
+  if (par_deg <= 360)
     {
     loc_angle = par_deg;
     }
@@ -417,7 +426,7 @@ void ssd1306_DrawArc(uint8_t x, uint8_t y, uint8_t radius, uint16_t start_angle,
     xp1 = x + (int8_t)(sin(rad)*radius);
     yp1 = y + (int8_t)(cos(rad)*radius);    
     count++;
-    if(count != approx_segments)
+    if (count != approx_segments)
       {
       rad = ssd1306_DegToRad(count*approx_degree);
       }
@@ -456,7 +465,7 @@ void ssd1306_DrawCircle(uint8_t par_x,uint8_t par_y,uint8_t par_r,SSD1306_COLOR 
       {
       y++;
       err = err + (y * 2 + 1);
-      if(-x == y && e2 <= x) 
+      if (-x == y && e2 <= x) 
         {
         e2 = 0;
         }
@@ -469,7 +478,7 @@ void ssd1306_DrawCircle(uint8_t par_x,uint8_t par_y,uint8_t par_r,SSD1306_COLOR 
       {
       /*nothing to do*/
       }
-    if(e2 > x) 
+    if (e2 > x) 
       {
       x++;
       err = err + (x * 2 + 1);
