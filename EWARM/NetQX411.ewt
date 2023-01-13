@@ -1478,6 +1478,9 @@
                     <name>$PROJ_DIR$\..\Application\src\NetQX_mcr1.c</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\Application\src\NetQX_menu.c</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\Application\src\NetQX_rdr4.c</name>
                 </file>
                 <file>
