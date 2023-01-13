@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 21
+#define SW_VERSION 22
+//  22 2023-01-12 change to NHD-0420H1Z-FSW-GBW-33V3 4x20 char LCD
 //  21 2022-12-03 first version for locker system with LOCKER6 cards
 // 221 2022-11-16 added enable/disable auto unlock with MSG_UNLK 252/253
 // 220 2022-11-10 first version with M95M04 4Mb chip

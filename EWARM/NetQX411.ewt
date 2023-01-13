@@ -1451,6 +1451,9 @@
                     <name>$PROJ_DIR$\..\Application\src\NetQX_gui.c</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\Application\src\NetQX_HND_lcd.c</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\Application\src\NetQX_i2c.c</name>
                 </file>
                 <file>
