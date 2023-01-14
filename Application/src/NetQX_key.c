@@ -18,6 +18,9 @@ u32 first_in_the_morning_occur[MAX_DOORS];
 u32 first_in_the_morning_timer[MAX_DOORS];
 bool reset_first_in_the_morning = true;
 
+s32 movement_timer[MAX_DOORS];
+
+
 extern u32 elevator_system, WiegandReader2[];
 
 void send_locker_unlock_command(u32 door);
@@ -813,6 +816,10 @@ continue_checking:
                   {                               // if this is the first to enter, set a timer
                   first_person_timer[source] = 80; // to 8 seconds, to allow 2nd person to exit
                   }
+                else if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH) && people_inside[source] == 0)
+                  {
+                  movement_timer[source] = -1; // count to 10 seconds on exit of last person
+                  }
                 }
               else
                 {
@@ -887,25 +894,56 @@ exec_unlock:
     }
   }
 
+//--------------------------------------------------------------------------
+void movement_detected(u32 source)
+  {
+  if (people_inside[source]) // check for movement within 15 minutes of entry
+    {
+    movement_timer[source] = 15 * 60 * 10; // set time to 15 minutes
+    }
+  else if (movement_timer[source] < -100) // nobody is supposed to be in the room. ALARM
+    {
+    generate_event(source, 0, 0, EVT_burglary);
+    }
+  }
+
+//--------------------------------------------------------------------------
+void dead_man_switch_handling(void)
+  {
+  u32 room;
+  for (room = 0; room < MAX_DOORS; room++)
+    {
+    if (test_door_flag(room, LFLAG_DEAD_MAN_SWITCH))
+      {
+      if (movement_timer[room] > 0)
+        {
+        if (--movement_timer[room] == 0)
+          {
+          generate_event(room, 0, 0, EVT_dead_man);
+          }
+        }
+      }
+    }
+  }
 
 //--------------------------------------------------------------------------
 void check_first_person_timers(void)
   {
-  u32 door;
-  for (door = 0; door < MAX_DOORS; door++)
+  u32 room;
+  for (room = 0; room < MAX_DOORS; room++)
     {
-    if (first_person_timer[door]) // timer is active?
+    if (first_person_timer[room]) // timer is active?
       {
-      if (--first_person_timer[door] == 0) // timer timed out?
+      if (--first_person_timer[room] == 0) // timer timed out?
         {
-        generate_event(door, 0, 0, EVT_single_person_inside);
+        generate_event(room, 0, 0, EVT_single_person_inside);
         }
       }
-    if (first_in_the_morning_timer[door])
+    if (first_in_the_morning_timer[room])
       {
-      if (--first_in_the_morning_timer[door] == 0)
+      if (--first_in_the_morning_timer[room] == 0)
         {
-        generate_event(door, 0, 0, EVT_single_person_inside);
+        generate_event(room, 0, 0, EVT_single_person_inside);
         }
       }
     }
@@ -933,6 +971,7 @@ void handle_keys(void)
     Timer_100mS_Flags  &= ~(Tmr_100mS_KEYS);
     
     check_first_person_timers();
+    dead_man_switch_handling();
     
     scan_keys = MAX_DOORS;
     if (++scan_delayed_10 >= 100) // scan timers once every 10 seconds

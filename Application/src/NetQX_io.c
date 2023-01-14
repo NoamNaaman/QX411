@@ -623,16 +623,24 @@ void handle_rte(void)
       goto next_door;
       }
     
-    generate_event(rte_idx, 0, 0, EVT_Request_to_Exit);
-    unlock10[rte_idx] = doors[rte_idx].Unlock_time;// * 10;
-    if (unlock10[rte_idx] < 5)
+    if (test_door_flag(rte_idx, LFLAG_2RDR_SINGLE_DOOR) &&
+        test_door_flag(rte_idx, LFLAG_DEAD_MAN_SWITCH)) 
       {
-      unlock10[rte_idx] = 5;
+      movement_detected(rte_idx);
       }
-    unlock_door(rte_idx);
-    RTE_pressed[rte_idx] = 1;
+    else
+      {
+      generate_event(rte_idx, 0, 0, EVT_Request_to_Exit);
+      unlock10[rte_idx] = doors[rte_idx].Unlock_time;// * 10;
+      if (unlock10[rte_idx] < 5)
+        {
+        unlock10[rte_idx] = 5;
+        }
+      unlock_door(rte_idx);
+      RTE_pressed[rte_idx] = 1;
+      }
     }
-  next_door:
+next_door:
   if (++rte_idx >= MAX_DOORS)
     {
     rte_idx = 0;

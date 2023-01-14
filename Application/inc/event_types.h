@@ -56,6 +56,8 @@ enum EVENT_TYPES  {
                   EVT_RemoteLeaveDoorOpen    =  142,
                   EVT_DoorSetupChanged       =  143,
                   EVT_single_person_inside   =  144,
+                  EVT_dead_man               =  145,
+                  EVT_burglary               =  146,
                   EVT_LAST 
                   };
 

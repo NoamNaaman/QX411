@@ -316,7 +316,6 @@ typedef struct  {
 #define LFLAG_1ST_VALID           0x00004000    // First valid tag unlocks AutoTZ
 #define LFLAG_DELAYED             0x00010000    // Delayed open mode for safes (dead-band time window defined in local parameter #14)
 #define LFLAG_DONT_COUNT          0x00020000    // do not down count user entries
-#define LFLAG_UNLOCK_BUZ          0x00040000    // buzz whenever a valid unlock occurs
 #define LFLAG_BUZ_ANY_MESSAGE     0x00080000    // sound buzzer on any message detected on bus
 #define LFLAG_IGNORE_FORCED_DOOR  0x00200000    // do not issue EVT_FORCED_DOOR event message
 #define LFLAG_2RDR_SINGLE_DOOR    0x00400000    // apply input from two reader to a single door
@@ -324,9 +323,11 @@ typedef struct  {
 
 #define LFLAG_DUAL_PRESENCE       0x00008000    // room behind door with entry/exit readers requires at least two persons inside. if not, alarm
 #define LFLAG_DUAL_ONCE_PER_DAY   0x00100000    // first time in the morning, for alarm disable. rest of day down to 1 person causes alarm
+#define LFLAG_DEAD_MAN_SWITCH     0x00040000    // security room. motion on RTE with no one in the room or no motion for 15 minutes with someone in the room
 
 #define LFLAG_BIDIR_MOT           0x01000000    // originally 0x00008000, Operate a bi-dir DC motor using relay2.
 #define LFLAG_SHORT_REJECT_BEEPS  0x02000000    // originally 0x00100000, sound a few short beeps on any card reject
+#define LFLAG_UNLOCK_BUZ          0x04000000    // originally 0x00040000, buzz whenever a valid unlock occurs
 
 
 //============ serial RAM addresses ========================
