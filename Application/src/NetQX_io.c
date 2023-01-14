@@ -23,7 +23,7 @@ extern ADC_HandleTypeDef hadc1;
 
 void led_onoff(u16 led, u8 onoff);
 void set_led(u16 door, u8 cmd);
-
+void init_ports(void);
 
 //=============================================================================================
 /**
@@ -883,13 +883,14 @@ BATV[0] VALUES
 
 void battery_handler(void)
   {
-  u16 mainv[2], batv[2], door;
+  u16 mainv[2], batv[2];
+//  u16 door;
   //  output_low(V_DROP); // high voltage operation
   if ((Timer_1sec_Flags & Tmr_1sec_CHG_BATTERY))
     {
     Timer_1sec_Flags  &= ~(Tmr_1sec_CHG_BATTERY);
     set_adc_channel(1);
-    door = 0;
+//    door = 0;
     delay_us(20);
     batv[0] = read_adc();
     set_adc_channel(0);

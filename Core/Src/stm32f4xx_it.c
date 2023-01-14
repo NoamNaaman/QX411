@@ -47,7 +47,9 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+void UserSysTick_Handler(void);
+void UART1_receive_char(void);
+void UART2_receive_char(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/

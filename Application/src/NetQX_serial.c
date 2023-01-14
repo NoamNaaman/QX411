@@ -172,6 +172,7 @@ void UART2_receive_char(void)
 //=============================================================================================
 void UART1_transmit_buffer(void)
   {
+#pragma diag_suppress=Pe550
   u8 chr;
   if ((USART1->CR1 & USART_CR1_TXEIE) != 0 && (USART1->SR & UART_FLAG_TXE) != 0)
     {
@@ -266,12 +267,12 @@ void send_char(u32 channel, char chr)
     {
     case 1:
 //      USART1->DR = chr;
-      HAL_UART_Transmit(&huart1, &chr, 1, 1);
+      HAL_UART_Transmit(&huart1, (u8 *)&chr, 1, 1);
       while (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_TC) == 0);
       break;
     case 2:
 //      USART2->DR = chr;
-      HAL_UART_Transmit(&huart2, &chr, 1, 1);
+      HAL_UART_Transmit(&huart2, (u8 *)&chr, 1, 1);
       while (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) == 0);
       break;
     }
