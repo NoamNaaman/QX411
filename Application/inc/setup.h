@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 222
+#define SW_VERSION 223
+// 223 2023-01-16 added G1 features
 // 222 2022-12-12 changed pin code from left justified HEX number to decimal (NetQX_wiegand.c)
 // 221 2022-11-16 added enable/disable auto unlock with MSG_UNLK 252/253
 // 220 2022-11-10 first version with M95M04 4Mb chip

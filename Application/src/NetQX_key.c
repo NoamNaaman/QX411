@@ -679,6 +679,26 @@ continue_checking:
           }
         
         generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Exit);      // generate exit event
+
+        if (dual_presence_feature_enabled(source))
+          {
+          if (people_inside[source])
+            {
+            // decrement counter
+            if (--people_inside[source] == 1) // if no person or more than 1 person inside, there is no problem
+              {                               // if this is the first to enter, set a timer
+              first_person_timer[source] = 80; // to 8 seconds, to allow 2nd person to exit
+              }
+            else if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH) && people_inside[source] == 0)
+              {
+              movement_timer[source] = -1; // count to 10 seconds on exit of last person
+              }
+            }
+          else
+            {
+            // nobody was inside to begin with. ALARM
+            }
+          }
         
         
         if (test_door_flag(source,  LFLAG_TRAFFIC_LT))                  // does this door participate in traffic control?
@@ -783,8 +803,12 @@ continue_checking:
         else
           {
           if (!second_reader)
-            {
+            { // this is reader 1 for ENTRY
             generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Entry);
+            if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH))
+              {
+              movement_timer[source] = 15 * 60 * 10; // set time to 15 minutes
+              }
             if (dual_presence_feature_enabled(source))
               {
               // increment counter
@@ -804,7 +828,7 @@ continue_checking:
               }
             }
           else
-            {
+            { // this is reader 2 for EXIT
             ClearReader2(source);
             generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Exit);
             if (dual_presence_feature_enabled(source))
@@ -897,11 +921,7 @@ exec_unlock:
 //--------------------------------------------------------------------------
 void movement_detected(u32 source)
   {
-  if (people_inside[source]) // check for movement within 15 minutes of entry
-    {
-    movement_timer[source] = 15 * 60 * 10; // set time to 15 minutes
-    }
-  else if (movement_timer[source] < -100) // nobody is supposed to be in the room. ALARM
+  if (people_inside[source] == 0 && movement_timer[source] < -100) // nobody is supposed to be in the room. ALARM
     {
     generate_event(source, 0, 0, EVT_burglary);
     }
@@ -922,6 +942,10 @@ void dead_man_switch_handling(void)
           generate_event(room, 0, 0, EVT_dead_man);
           }
         }
+      else if (movement_timer[room] < 0)
+        { // check for movement when nobody is in the room
+        movement_timer[room]--;
+        }
       }
     }
   }
@@ -936,14 +960,20 @@ void check_first_person_timers(void)
       {
       if (--first_person_timer[room] == 0) // timer timed out?
         {
-        generate_event(room, 0, 0, EVT_single_person_inside);
+        if (people_inside[room] == 1)
+          {
+          generate_event(room, 0, 0, EVT_single_person_inside);
+          }
         }
       }
     if (first_in_the_morning_timer[room])
       {
       if (--first_in_the_morning_timer[room] == 0)
         {
-        generate_event(room, 0, 0, EVT_single_person_inside);
+        if (people_inside[room] == 1)
+          {
+          generate_event(room, 0, 0, EVT_single_person_inside);
+          }
         }
       }
     }
