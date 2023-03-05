@@ -1,5 +1,6 @@
 #include "main.h"
 #include "setup.h"
+#include "string.h"
 
 void InitWDG(void);
 
@@ -362,7 +363,8 @@ u8 get_apb_counter(u32 index)              //NetMX changes needed
 //-----------------------------------------------------------------------------
 u32 count_keys_in_DB(void)
   {
-  u32 count, key_code, led_toggle = 0;
+  u32 count, led_toggle = 0;
+//  u32 key_code;
   last_function = 123;
   keys_in_eeprom = 0;
   KEY_RECORD key_rec;
@@ -393,7 +395,8 @@ u32 count_keys_in_DB(void)
 void erase_keys_in_DB(void)
   {
   KEY_RECORD key_rec;
-  u32 count, key_code, led_toggle = 0;
+  u32 count, led_toggle = 0;
+//  u32 key_code;
   keys_in_eeprom = 0;
   last_function = 124;
   output_low(LED_RED);

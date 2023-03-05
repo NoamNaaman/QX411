@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 223
+#define SW_VERSION 5
+//   5 2023-03-05 special STid reader for Govt translation in NetQX_wiegand.c
 // 223 2023-01-16 added G1 features
 // 222 2022-12-12 changed pin code from left justified HEX number to decimal (NetQX_wiegand.c)
 // 221 2022-11-16 added enable/disable auto unlock with MSG_UNLK 252/253

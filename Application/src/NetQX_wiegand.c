@@ -2,8 +2,10 @@
 
 #include "setup.h"
 
-#define __JERUSALEM_MODE__ 0
-#define __HEX_NUMBER__ 0
+#define __JERUSALEM_MODE__   0
+#define __HEX_NUMBER__       0
+#define __STID_GOV_RDR__     1
+
 
 u8 zeros[MAX_DOORS], ones[MAX_DOORS];
 u32 raw_wiegand;
@@ -169,7 +171,7 @@ void WGND_init(u8 reader)
 u32 extract_wiegand_key(u32 first, u32 digits, u8 *data)
   {
 //  u16 idx;
-  u32 number = 0L, reader_mode;
+  u32 number = 0L;
   u8 digit, mask;
   first -= 1;
   number = 0;
@@ -224,7 +226,9 @@ u8 WGND_wait(u32 reader)
   {
   u32 digit;//, bytes;
   u16 pincode;
+#if __STID_GOV_RDR__ != 1
   u8 kswitch[4];
+#endif
   u32 tag;
   if (!BitCnt[reader])
     {
@@ -289,7 +293,15 @@ u8 WGND_wait(u32 reader)
       {
       reader_data[reader][idx] ^= 0xFF;
       }
-    
+
+#if __STID_GOV_RDR__ == 1
+    u32 STid_tag = make32(reader_data[reader][0], reader_data[reader][1], reader_data[reader][2], reader_data[reader][3]);
+    STid_tag <<= 1; // shift left
+    u32 STid_site = STid_tag >> 24; // isolate site code
+    STid_tag = (STid_tag & 0x00FFFF00) >> 8;
+    STid_tag += STid_site * 100000;
+    tag = STid_tag;
+#else    
     tag = extract_wiegand_key(doors[reader].First_digit, doors[reader].Number_of_digits, &reader_data[reader][0]);
     if (mul_t_lock)
       {
@@ -299,6 +311,7 @@ u8 WGND_wait(u32 reader)
       kswitch[3] = make8(tag, 3);
       tag = make32(kswitch[3],kswitch[2],kswitch[1],kswitch[0]);
       }
+#endif
     new_key[reader] = tag;
     led_period[reader] = 20;
     led_onoff(reader, 1);
