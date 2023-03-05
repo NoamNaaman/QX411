@@ -3,8 +3,29 @@
 #include "setup.h"
 #include "serial.h"
 #include "stdio.h"
+#include "ctype.h"
+
+#define X16PREAMB '#'
 
 u32 locker_unlocked[64];
+
+bool Subnet_char_ready(void);
+u8 GetCharFromSubnet(void);
+u32 extract_wiegand_key(u32 first, u32 digits, u8 *data);
+
+u8 COM2_buf[256];
+
+u32 previous_tag[64];
+u32 tag_timeout[64];
+u8  locker_status[64];
+u32 tag_timeout[64];
+u32 IOX16_state;
+u8  prev_char2;
+u32 packet_idx2;
+u32 scan_reader_timeout;
+u32 locker_tags[64];
+u32 locker_command_sent[64];
+
 
 //-----------------------------------------------------------------------------
 void send_to_lockers(u32 door, u8 command, char *param)
@@ -26,6 +47,7 @@ void send_to_lockers(u32 door, u8 command, char *param)
   comm_state = COM_IDLE;
   packet_idx = 0;
   flush_rx_buffer(1);
+  locker_command_sent[door]++;
   }
 
 //-----------------------------------------------------------------------------
@@ -38,6 +60,10 @@ void send_to_reader(u32 floor, u8 command)
 void send_locker_unlock_command(u32 door)
   {
   send_to_lockers(door, 'U', "");
+  delay_ms(50);
+  send_to_lockers(door, 'U', "");
+  delay_ms(50);
+  send_to_lockers(door, 'U', "");
   delay_ms(1);
   locker_unlocked[door] = 1;
   }
@@ -45,15 +71,14 @@ void send_locker_unlock_command(u32 door)
 //-----------------------------------------------------------------------------
 void send_locker_unlock_time(void)
   {
-  char buf[9];
-  sprintf(buf, " %d", doors[0].Unlock_time);
-  send_to_lockers(160, 'T', buf);
-  delay_ms(1);
+//  char buf[9];
+//  sprintf(buf, " %d", doors[0].Unlock_time);
+//  send_to_lockers(160, 'T', buf);
+//  delay_ms(1);
   }
 
 //----------------------------------------------------------------------------
 
-#if 0
 
 u32 next_inbyte2;
 
@@ -92,7 +117,7 @@ u32 get_hex(u8 *ptr)
  return acc;
  }
 
-check_iox_checksum(void)
+bool check_iox_checksum(void)
   {
   u32 idx, ccheck = 0, rcheck;
   idx = 0;
@@ -108,7 +133,7 @@ check_iox_checksum(void)
 void process_iox16(void)
   {
   u32 addr, index;
-  u8 status, stat, reader_data[8];
+  u8 status, stat;
   u32 tag;
   if (COM2_buf[0] == '#')
     {
@@ -139,7 +164,7 @@ void process_iox16(void)
             tag |= stat;
             if ((++index & 1) == 0)
               {
-              reader_data[index >> 1] = tag & 0xFF;
+              reader_data[0][index >> 1] = tag & 0xFF;
               }  
             }
           else
@@ -150,8 +175,9 @@ void process_iox16(void)
         addr &= 127;
 //        if (tag != previous_tag[addr])
           {
-          tag = extract_wiegand_key(doors[0].first_digit, doors[0].number_of_digits, &reader_data[1]);
+          tag = extract_wiegand_key(doors[0].First_digit, doors[0].Number_of_digits, &reader_data[0][1]);
           process_key(addr, tag, 0);
+          locker_tags[addr]++;
           }
         previous_tag[addr] = tag;
         tag_timeout[addr] = 10;
@@ -178,11 +204,11 @@ void process_iox16(void)
 void handle_IOX16_messages(void)
   {
   u8 chr;
-  while (COM2_rcnt)
+  while (Subnet_char_ready())
     {
     if (IOX16_state == 0)
       {
-      chr = COM2_get_chr();
+      chr = GetCharFromSubnet();
       if (chr == X16PREAMB)
         {
         if (prev_char2 == X16PREAMB)
@@ -196,7 +222,7 @@ void handle_IOX16_messages(void)
       }
     else if (IOX16_state == 1)
       {
-      chr = COM2_get_chr();
+      chr = GetCharFromSubnet();
       COM2_buf[packet_idx2++] = chr;
       if (packet_idx > 32)
         {
@@ -215,9 +241,10 @@ void handle_IOX16_messages(void)
       IOX16_state = 0;
       }
     }
-  if (TMR_10MS_CHECK_TIMEOUT)
+  if (Timer_10mS_Flags & TMR_10mS_Locker_Timeout)
     {
-    TMR_10MS_CHECK_TIMEOUT = 0;
+    Timer_10mS_Flags &= ~TMR_10mS_Locker_Timeout;
+    
     if (tag_timeout[scan_reader_timeout])
       {
       if (!--tag_timeout[scan_reader_timeout])
@@ -231,4 +258,4 @@ void handle_IOX16_messages(void)
       }
     }
   }
-#endif
+

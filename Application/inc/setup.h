@@ -26,28 +26,9 @@
 
 
 
-#define SW_VERSION 223
+#define SW_VERSION 31
+//  31 2023-02-17 safes control
 // 223 2023-01-16 added G1 features
-// 222 2022-12-12 changed pin code from left justified HEX number to decimal (NetQX_wiegand.c)
-// 221 2022-11-16 added enable/disable auto unlock with MSG_UNLK 252/253
-// 220 2022-11-10 first version with M95M04 4Mb chip
-// 212 2021-11-22 short on reader 4 middle pins on power up clears door 1 flags to get out of elevator mode
-// 211 2021-11-13 fixed elevator software
-// 210 2021-11-11 fixed USART2 interrupt problem
-// 209 2021-09-25 fixed flash read/write functionality
-// 207 2021-08-18 improved two-man + dual-reader operation. made TIM1 interrupt even faster
-// 206 2021-08-13 changed system clock to 100MHz, 2nd reader sampled every 45uS
-// 205 2021-08-09 fixed dual-reader mode on all 4 doors
-// 204 2021-08-07 increased stored events to 4096
-// 203 2021-08-07 dual reader mode working
-// 202 2021-08-06 Fixed RTC reset problem 
-// 201 2021-08-04 RDR2 working. forced door aux 30 seconds. DIP inverted
-// 200 2021-07-31 first version for F411, based on 144 on older boards
-// 136 2021-02-09 added post key processing pause per door to prevent multi-key break-in attempts
-// 135 2021-02-04 added RDR2,RDR4 D0/D1 signal cleanup in NetQX_intr.c
-// 134 - added EVT_RemoteLeaveDoorOpen = event 142 for UNLK 255. ignore extra UNLK commands.
-// 133 - added event 140 - enable/disable door unlock
-// 132 - changed event numbers according to Daniel's request
 
 //========== STM32 housekeeping functions ===================================
 // I/O pin functionality definitions for use with SetPinMode()
@@ -885,7 +866,7 @@ void RTC_init_chip(void);
 void COM1_init(void);
 void reset_lantronix(void);
 void COM1_send_string(u8 *bp);
-bool COM1_send_packet(u8 dest, u8 source, u32 length);
+bool SendToGK(u8 dest, u8 source, u32 length);
 void flush_rx_buffer(u32 channel);
 void buzzer_handler(void);
 void handle_keys(void);
@@ -937,6 +918,7 @@ extern const u32 Tmr_10mS_READER1       ; // 16
 extern const u32 Tmr_10mS_LEDS1         ; // 32
 extern const u32 Tmr_10mS_INT_BUZZER    ; // 64
 extern const u32 Tmr_10mS_RDR4_TIME     ; //128
+extern const u32 TMR_10mS_Locker_Timeout ; //256
 
 extern const u32 Tmr_100mS_CLEAR_APB    ; //  1
 extern const u32 Tmr_100mS_KEYS         ; //  2

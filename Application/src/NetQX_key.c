@@ -140,7 +140,7 @@ void energize_elevator_relays(u32 aln)
   {
   AL_RECORD al;
   u32 index;
-  u8 mask, floors;
+  u8 mask, byteX, byteD;
   send_locker_unlock_time();
   DB_load_access_level(aln, &al);
   if (al.weekzone[0])
@@ -151,30 +151,34 @@ void energize_elevator_relays(u32 aln)
       }
     }
   
-  for (index = 0, floors = al.ValidDoor[0][0], mask = 1; mask != 0; mask <<= 1, index++)
+  for (byteX = 0, index = 0; index < 128; byteX++)
     {
-    if ((floors & mask) != 0)
+    byteD = al.ValidDoor[0][byteX];
+    for (mask = 1; mask != 0; mask <<= 1, index++)
       {
-      enable_floor(index);
+      if ((byteD & mask) != 0)
+        {
+        send_locker_unlock_command(index);
+//        return;
+        }
       }
     }
   
-  u32 floor_cnt = doors[0].Local_param[7];
-  for (index = 1; index < 8; index++)
-    {
-    floors = al.ValidDoor[0][index];
-    for (u32 floor = 1, mask = 1; floor < 9; mask <<= 1, floor++)
-      {
-      if ((floors & mask) != 0)
-        {
-        send_locker_unlock_command((index-1) * 8 + floor);
-        }
-      if (--floor_cnt == 0)
-        {
-        return;
-        }
-      }
-    }
+//  u32 floor_cnt = doors[0].Local_param[7];
+//  for (index = 0; index < 16; index++)
+//    {
+//    for (u32 floor = 1, mask = 1; floor < 9; mask <<= 1, floor++)
+//      {
+//      if ((floors & mask) != 0)
+//        {
+//        send_locker_unlock_command((index) * 8 + floor);
+//        }
+//      if (--floor_cnt == 0)
+//        {
+//        return;
+//        }
+//      }
+//    }
   }
 
 //--------------------------------------------------------------------------

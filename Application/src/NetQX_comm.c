@@ -80,7 +80,7 @@ s32 msgcmp(void * s1,char *s2,u8 n)
   }
 
 //-----------------------------------------------------------------------------
-bool COM1_char_ready(void)
+bool Subnet_char_ready(void)
   {
 //  return COM1_rcnt != 0;
   return get_comm_buffer_status(1);
@@ -89,36 +89,28 @@ bool COM1_char_ready(void)
 //-----------------------------------------------------------------------------
 bool CommCharReady(void)
   {
-  if (elevator_system)
-    {
-    return get_comm_buffer_status(2);
-    }
-  
-  return get_comm_buffer_status(1) || get_comm_buffer_status(2);
+  return get_comm_buffer_status(2);
   }
 
 //-----------------------------------------------------------------------------
-u8 CommGetChar(void)
+u8 GetCharFromGK(void)
   {
-  if (!elevator_system) // regular system
-    {              // both USARTs are enabled for PC comm
-    if (get_comm_buffer_status(1))
-      {
-      return get_usart_byte(1);
-      }
-    else if (get_comm_buffer_status(2))
-      {
-      Ethernet_active = 12345;
-      return get_usart_byte(2);
-      }
+  // elevator/safe system
+  if (get_comm_buffer_status(2))
+    {
+    Ethernet_active = 12345;
+    return get_usart_byte(2);
     }
-  else             // elevator system
-    {             // only XPORT channel is used for PC
-    if (get_comm_buffer_status(2))
-      {
-      Ethernet_active = 12345;
-      return get_usart_byte(2);
-      }
+  return 0;
+  }
+
+//-----------------------------------------------------------------------------
+u8 GetCharFromSubnet(void)
+  {
+  // elevator/safe system
+  if (get_comm_buffer_status(1))
+    {
+    return get_usart_byte(1);
     }
   return 0;
   }
@@ -128,10 +120,6 @@ void transmit_char(u16 chr)
   {
   last_function = 2;
   ETHR_send_char(chr);
-  if (!elevator_system)  
-    {
-    USART1->DR = chr; // send to RS485 with no delays since ETHR_send_char() already does
-    }
   }
 
 //=============================================================================
@@ -144,7 +132,7 @@ u16 COM1_get_chr(void)
   }
 
 //-----------------------------------------------------------------------------
-bool COM1_send_packet(u8 dest, u8 source, u32 length)
+bool SendToGK(u8 dest, u8 source, u32 length)
   {
   u16 crc;
   u16 chr;//, echo;
@@ -168,29 +156,8 @@ bool COM1_send_packet(u8 dest, u8 source, u32 length)
   COM1_rxi = COM1_rxo = COM1_rcnt = 0;
   fail = 0;
 
-  while (1)
-    {
-    delay_us(200); // check for clear bus
-    if (!COM1_rcnt)
-      {
-      break;
-      }
-    u32 idx = CommGetChar();
-    }
 
-//  output_high(X_RS485EN);
-  
-  if (!elevator_system) // regular system
-    {
-    output_high(RS485_EN); // enable RS485 transmit
-    RS485_sending = 1;
-    delay_us(20);
-    }
-  else // elevator system
-    {
-//    output_high(XPORT_EN);
-    delay_us(10);
-    }
+  delay_us(10);
   bp = comm_tbuf;
   transmit_char(0);
   delay_us(50);
@@ -201,19 +168,6 @@ bool COM1_send_packet(u8 dest, u8 source, u32 length)
     delay_us(30);
     }
   delay_us(10);
-  if (!elevator_system)
-    {
-    output_low(RS485_EN); // disable transmit
-    RS485_sending = 0;
-    flush_rx_buffer(1);
-    }
-
-//  output_low(X_RS485EN);
-  
-//  if (elevator_system) // regular system
-//    {
-//    output_low(XPORT_EN);
-//    }
   return !fail;
   }
 
@@ -406,7 +360,7 @@ void send_fire_alarm(u32 onoff)
     onoff = 0x55;
     }
   put_short(onoff);
-  COM1_send_packet(160, 0, next_outbyte);
+  SendToGK(160, 0, next_outbyte);
   memcpy(comm_buf, comm_tbuf, sizeof(comm_buf));
   process_message();
   }
@@ -417,7 +371,7 @@ void send_pc_wakeup(void)
   last_function = 120;
   next_outbyte = 7;
   put_short(MSG_STST);                                   // 7         event message
-  COM1_send_packet(0, 0, next_outbyte);
+  SendToGK(0, 0, next_outbyte);
   }
 
 //=============================================================================================
@@ -438,7 +392,7 @@ bool send_event(u16 index, EVENT_RECORD *evt)
   put_short(doors[evt->source].DoorGroup);               // 19        door group
   put_long(evt->Code);                                   // 20 .. 23  tag code is applicable
   GKP_wait_ack = 1;
-  success = COM1_send_packet(0, evt->source, next_outbyte);
+  success = SendToGK(0, evt->source, next_outbyte);
   return success;
   }
 
@@ -559,7 +513,7 @@ void send_status(u32 door)
   put_integer(event_index);
   put_integer(event_not_sent);
   put_integer(event_next_send);
-  COM1_send_packet(0, door, next_outbyte);
+  SendToGK(0, door, next_outbyte);
   }
 
 //=============================================================================================
@@ -577,7 +531,7 @@ void send_weekzone_msg(void)
     put_short(0);
     put_short(95);
     }
-  COM1_send_packet(0, 0, next_outbyte);
+  SendToGK(0, 0, next_outbyte);
   }
 
 ////----------------------------------------------------------------------------
@@ -595,7 +549,7 @@ void send_weekzone_msg(void)
 //  put_short(1);
 //  put_short(0);
 //  put_integer(0); // flags
-//  COM1_send_packet(0, 0, next_outbyte);
+//  SendToGK(0, 0, next_outbyte);
 //  }
 
 //=============================================================================================
@@ -1578,25 +1532,18 @@ void GKP_comm_handler(void)
   while (CommCharReady())
     {
     comm_timer = 0;
-/*
-    if (MyAddress == 0xC9)
-      {
-      transmit_char(CommGetChar()+1);
-      continue;
-      }
-*/
 
     switch(comm_state)
       {
       case COM_IDLE:
-        if (CommGetChar() == PREAMBLE0) // start of packet?
+        if (GetCharFromGK() == PREAMBLE0) // start of packet?
           {
           comm_buf[packet_idx++] = PREAMBLE0;
           comm_state = COM_RECD;
           }
         break;
       case COM_RECD:
-        chr = CommGetChar();
+        chr = GetCharFromGK();
         if (packet_idx == 1)
           {
           if (chr == PREAMBLE1)
@@ -1653,7 +1600,7 @@ void GKP_comm_handler(void)
           }
         break;
       case COM_RACK:
-        chr = CommGetChar();
+        chr = GetCharFromGK();
         if (comm_buf[3] == 0)
           {
           ETH_detected = HOST_NO_COMM_TIMEOUT;

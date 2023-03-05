@@ -231,6 +231,7 @@ extern u16  relay_pulse[MAX_DOORS];
 
 //======== prototypes =============================================
 void clear_reader_outputs(void);
+void handle_IOX16_messages(void);
 
 
 //============ source modules ====================================-
@@ -395,6 +396,7 @@ void load_setup(void)
     {
     store_mfg_defaults();
     }
+  doors[0].Flags |= LFLAG_ELEVATOR_CONTROL;
   }
 
 
@@ -624,6 +626,7 @@ void background_tasks(void)
   get_analog_inputs();
   battery_handler();
   buzzer_handler();
+  handle_IOX16_messages();
   }
 
 //=============================================================================
@@ -888,7 +891,7 @@ void test_comm(void)
     ack_detected = 0;
     put_short(MSG_UNLK);
     put_short(2);
-    COM1_send_packet(1, 0xF1, 7);
+    SendToGK(1, 0xF1, 7);
     while (!ack_detected)
       {
       background_tasks();

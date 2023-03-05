@@ -26,7 +26,8 @@ const u32 Tmr_10mS_READER1      =  16;
 const u32 Tmr_10mS_LEDS1        =  32;  
 const u32 Tmr_10mS_INT_BUZZER   =  64;  
 const u32 Tmr_10mS_RDR4_TIME    = 128;  
- 
+const u32 TMR_10mS_Locker_Timeout = 256;
+
 const u32 Tmr_100mS_CLEAR_APB   =   1;  
 const u32 Tmr_100mS_KEYS        =   2;  
 const u32 Tmr_100mS_UPDT        =   4;  
