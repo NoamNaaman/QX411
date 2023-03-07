@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 31
+#define SW_VERSION 32
+//  32 2023-03-05 added STid reader processing 
 //  31 2023-02-17 safes control
 // 223 2023-01-16 added G1 features
 

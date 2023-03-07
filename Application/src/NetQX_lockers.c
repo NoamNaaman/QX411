@@ -7,6 +7,10 @@
 
 #define X16PREAMB '#'
 
+#define __STID_GOV_RDR__ 1
+
+
+
 u32 locker_unlocked[64];
 
 bool Subnet_char_ready(void);
@@ -25,6 +29,7 @@ u32 packet_idx2;
 u32 scan_reader_timeout;
 u32 locker_tags[64];
 u32 locker_command_sent[64];
+
 
 
 //-----------------------------------------------------------------------------
@@ -132,6 +137,8 @@ bool check_iox_checksum(void)
 
 void process_iox16(void)
   {
+  u32 STid_site;
+  u32 STid_tag;
   u32 addr, index;
   u8 status, stat;
   u32 tag;
@@ -173,12 +180,22 @@ void process_iox16(void)
             }
           }
         addr &= 127;
-//        if (tag != previous_tag[addr])
-          {
-          tag = extract_wiegand_key(doors[0].First_digit, doors[0].Number_of_digits, &reader_data[0][1]);
-          process_key(addr, tag, 0);
-          locker_tags[addr]++;
-          }
+
+#if __STID_GOV_RDR__ == 1
+        STid_tag = make32(reader_data[0][0], reader_data[0][1], reader_data[0][2], reader_data[0][3]);
+        STid_tag <<= 1; // shift left
+        STid_site = STid_tag >> 24; // isolate site code
+        STid_tag = (STid_tag & 0x00FFFF00) >> 8;
+        STid_tag += STid_site * 100000;
+        tag = STid_tag;
+#else    
+        //        if (tag != previous_tag[addr])
+        //          {
+        tag = extract_wiegand_key(doors[0].First_digit, doors[0].Number_of_digits, &reader_data[0][1]);
+#endif          
+        process_key(addr, tag, 0);
+        locker_tags[addr]++;
+        //          }
         previous_tag[addr] = tag;
         tag_timeout[addr] = 10;
         break;
