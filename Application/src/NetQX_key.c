@@ -276,24 +276,7 @@ void update_all_doors(u16 count)
 //--------------------------------------------------------------------------
 void execute_unlock(u16 source, u16 Flags)
   {
-//  if (rdr4_active)
-//    {
-//    rdr4_green(source);
-//    }
-//  unlock_door(source);
-//  unlock10[source] = doors[source].Unlock_time;// * 10;
-//  if (Flags & KFLAG_ExtraUnlock)
-//    {
-//    unlock10[source] <<= 1; // make unlock time twice as long
-//    }
-//  if (enable_first_user[source] && (Flags & KFLAG_AutoOpenStart))
-//    {
-//    enable_first_user[source] = 0;
-//    auto_unlocked[source] = 1;
-//    generate_event(source, 0, 0, EVT_Auto_door_open);
-//    }
   send_locker_unlock_command(source);
-
   }
 
 //--------------------------------------------------------------------------
