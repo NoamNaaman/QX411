@@ -35,10 +35,10 @@ u8 fire_condition[MAX_DOORS];
 u8 Month_special_days[31]; // buffer for a full month of up to 31 days
 u8 enable_reader[MAX_DOORS];
 
-u8 last_key_to[MAX_DOORS];
-u32 prev_key[MAX_DOORS];
-u32 new_key[MAX_DOORS];
-u8 UserKeyReady[MAX_DOORS];
+u8 last_key_to[64];
+u32 prev_key[64];
+u32 new_key[64];
+u8 UserKeyReady[64];
 
 u8 APB_table[MAX_KEY_RECORDS / 4];
 
@@ -579,7 +579,7 @@ void wait_for_key(void)
   if (Timer_1mS_Flags & Tmr_1mS_KEY_DELAY)
     {
     Timer_1mS_Flags &= ~Tmr_1mS_KEY_DELAY;
-    for (idx = 0; idx < MAX_DOORS; idx++)
+    for (idx = 0; idx < 64; idx++)
       {
       if (key_delay_timer[idx])
         {

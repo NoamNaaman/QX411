@@ -512,10 +512,10 @@ extern u8 fire_condition[MAX_DOORS];
 
 extern u8 enable_reader[MAX_DOORS];
 
-extern u8 last_key_to[MAX_DOORS];
-extern u32 prev_key[MAX_DOORS];
-extern u32 new_key[MAX_DOORS];
-extern u8 UserKeyReady[MAX_DOORS];
+extern u8 last_key_to[64];
+extern u32 prev_key[64];
+extern u32 new_key[64];
+extern u8 UserKeyReady[64];
 
 extern u8 APB_table[MAX_KEY_RECORDS / 4];
 

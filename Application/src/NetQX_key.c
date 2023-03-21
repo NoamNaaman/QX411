@@ -5,11 +5,11 @@
 bool valid_door_found;
 u32 latest_key_data, key_checked;
 
-u32 key_delay_timer[MAX_DOORS];
+u32 key_delay_timer[64];
 
-KEY_RECORD key_record[MAX_DOORS];
-KEY_RECORD first_key[MAX_DOORS];
-u32 key_code[MAX_DOORS];
+KEY_RECORD key_record[64];
+KEY_RECORD first_key[64];
+u32 key_code[64];
 
 u32 people_inside[MAX_DOORS]; // for dual presence feature
 u32 first_person_timer[MAX_DOORS]; // for dual presence feature
@@ -20,6 +20,7 @@ bool reset_first_in_the_morning = true;
 
 s32 movement_timer[MAX_DOORS];
 
+u32 door_opened[64];
 
 extern u32 elevator_system, WiegandReader2[];
 
@@ -28,6 +29,7 @@ void operate_relay(u32 relay, u32 onoff);
 void send_locker_unlock_time(void);
 bool Reader2IsSource(u32 door);
 void ClearReader2(u32 door);
+void send_locker_unlock_command(u32 door);
 
 //--------------------------------------------------------------------------
 bool dual_presence_feature_enabled(u32 source)
@@ -192,11 +194,9 @@ bool check_access_level(u32 door, u32 aln)
     {
     return 0;
     }
-  
-  albyteX = (MyAddress - 1) >> 3;
-  nibbleX = (MyAddress - 1)  & 7;
-  nibbleX = (nibbleX >= 4) ? 4 : 0;
-  mask = 1 << (door + nibbleX);
+  door--; // zero based
+  albyteX = (door) >> 3;
+  mask = 1 << (door & 7);
   DB_load_access_level(aln, &al);
   for (idx = 0; idx < 2; idx++)
     {
@@ -205,6 +205,7 @@ bool check_access_level(u32 door, u32 aln)
       valid_door_found = 1;
       if (check_time_zone(al.weekzone[idx])) //from/to time check
         {
+        door_opened[door]++;
         return 1;
         }
       }
@@ -275,22 +276,24 @@ void update_all_doors(u16 count)
 //--------------------------------------------------------------------------
 void execute_unlock(u16 source, u16 Flags)
   {
-  if (rdr4_active)
-    {
-    rdr4_green(source);
-    }
-  unlock_door(source);
-  unlock10[source] = doors[source].Unlock_time;// * 10;
-  if (Flags & KFLAG_ExtraUnlock)
-    {
-    unlock10[source] <<= 1; // make unlock time twice as long
-    }
-  if (enable_first_user[source] && (Flags & KFLAG_AutoOpenStart))
-    {
-    enable_first_user[source] = 0;
-    auto_unlocked[source] = 1;
-    generate_event(source, 0, 0, EVT_Auto_door_open);
-    }
+//  if (rdr4_active)
+//    {
+//    rdr4_green(source);
+//    }
+//  unlock_door(source);
+//  unlock10[source] = doors[source].Unlock_time;// * 10;
+//  if (Flags & KFLAG_ExtraUnlock)
+//    {
+//    unlock10[source] <<= 1; // make unlock time twice as long
+//    }
+//  if (enable_first_user[source] && (Flags & KFLAG_AutoOpenStart))
+//    {
+//    enable_first_user[source] = 0;
+//    auto_unlocked[source] = 1;
+//    generate_event(source, 0, 0, EVT_Auto_door_open);
+//    }
+  send_locker_unlock_command(source);
+
   }
 
 //--------------------------------------------------------------------------
@@ -441,27 +444,16 @@ void process_key(u32 source, u32 key, u16 special)
   
   latest_key_data = key_code[source];
   
-  // do not allow two keys within 1 second of each other to prevent "phishing"
-  if (key_delay_timer[source])
-    {
-    if (key_delay_timer[source] < 1000)
-      {
-      key_delay_timer[source] += 500;
-      }
-    return;
-    }
-  
-  key_delay_timer[source] = 700;
-  
+ 
   key_checked++;
   
   output_high(LED_RED);
   output_high(LED_GREEN);
   
-  if (special == 1)
-    {
-    goto tag_approved;
-    }
+//  if (special == 1)
+//    {
+//    goto tag_approved;
+//    }
   
   if (prev_key[source] == key_code[source])
     {
@@ -479,47 +471,47 @@ void process_key(u32 source, u32 key, u16 special)
   last_key_to[source] = 6; // in 100 mS increments
   UserKeyReady[source] = 0;
   
-  if (test_door_flag(source, LFLAG_DELAYED))
-    {
-    if (delayed_open_state[source] == 1)  // delay?
-      {
-      return;
-      }
-    }
-  
-  if (dual_reader && // is this a dual reader, two man rule door?
-      test_door_flag(source, LFLAG_TWO_MAN))            // if true and ...
-    {
-    if (second_reader)                                  // key detected on 2nd reader and
-      {
-      if (two_man_count[source] &&                      // this is the second key and
-          two_man_timer[source])                        // two man rule timer not zero yet
-        {
-        ClearReader2(source);
-        second_reader = false;
-        if (key_code[source] == first_key[source].Code)                // is key from 2nd reader equal PIN code?
-          {
-          generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Entry);
-          goto exec_unlock;
-          }
-        else
-          {
-          goto invalid_key;
-          }
-        }
-      else
-        {
-        return; // first key not presented or timed out
-        }
-      } // if NOT 2nd reader, fall through for processing of first key
-    else if (two_man_count[source])
-      {
-      two_man_timer[source] = 0;
-      two_man_count[source] = 0;
-      return;
-      }
-    }
-  
+//  if (test_door_flag(source, LFLAG_DELAYED))
+//    {
+//    if (delayed_open_state[source] == 1)  // delay?
+//      {
+//      return;
+//      }
+//    }
+//  
+//  if (dual_reader && // is this a dual reader, two man rule door?
+//      test_door_flag(source, LFLAG_TWO_MAN))            // if true and ...
+//    {
+//    if (second_reader)                                  // key detected on 2nd reader and
+//      {
+//      if (two_man_count[source] &&                      // this is the second key and
+//          two_man_timer[source])                        // two man rule timer not zero yet
+//        {
+//        ClearReader2(source);
+//        second_reader = false;
+//        if (key_code[source] == first_key[source].Code)                // is key from 2nd reader equal PIN code?
+//          {
+//          generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Entry);
+//          goto exec_unlock;
+//          }
+//        else
+//          {
+//          goto invalid_key;
+//          }
+//        }
+//      else
+//        {
+//        return; // first key not presented or timed out
+//        }
+//      } // if NOT 2nd reader, fall through for processing of first key
+//    else if (two_man_count[source])
+//      {
+//      two_man_timer[source] = 0;
+//      two_man_count[source] = 0;
+//      return;
+//      }
+//    }
+//  
   prev_key[source] = key_code[source];
   
   // search key in data base
@@ -527,16 +519,16 @@ void process_key(u32 source, u32 key, u16 special)
   
   if (index) // tag found in DB
     {
-    if (check_disable_conditions(source, key_code[source], key_record[source].ID, key_record[source].Flags))
-      {
-      return;
-      }
+//    if (check_disable_conditions(source, key_code[source], key_record[source].ID, key_record[source].Flags))
+//      {
+//      return;
+//      }
     count = 0;
     
-    if (!allowed_to_open(source, &key_record[source]))
-      {
-      goto yellow;
-      }
+//    if (!allowed_to_open(source, &key_record[source]))
+//      {
+//      goto yellow;
+//      }
     
 //    personal = 0;
 //    if (key_record[source].Flags & KFLAG_PersonalAL)
@@ -546,323 +538,20 @@ void process_key(u32 source, u32 key, u16 special)
     
     valid_door_found = 0;
     
-    if (elevator_system)
-      {
-      handle_elevator(&key_record[source]);
-      return;
-      }
+//    if (elevator_system)
+//      {
+//      handle_elevator(&key_record[source]);
+//      return;
+//      }
     
     if (check_access_level((u16)source, (u16)key_record[source].al[0]))
       {
-      goto continue_checking;
-      }
-    
-/*    if (!elevator_system && personal) ////// testing ONLY 2 DOORS?
-      {
-      if (source)
-        {
-        mask = 0x8000;
-        }
-      else
-        {
-        mask = 0x4000;
-        }
-      if (key_record[source].FmDate & mask)
-        {
-        valid_door_found = 1;
-        if (check_time_zone(key_record[source].al[1]))
-          {
-          goto continue_checking;
-          }
-        }
-      else
-        {
-invalid_door:
-        handle_invalid_door(source);
-        }
-      goto yellow;
-      }
-    else */
-    if (key_record[source].al[1] > 0 && key_record[source].al[1] < MAX_AL && 
-        check_access_level((u16)source, (u16)key_record[source].al[1]))
-      {
-continue_checking:
-      if (test_door_flag(source, LFLAG_TWO_MAN))
-        {
-        if (!two_man_count[source]) // is this first tag of two needed for opening?
-          {
-          two_man_first[source] = key_record[source].ID & 0x00FFFFFFL;
-          generate_event(source, key_record[source].ID, key_code[source], EVT_First_key_valid);
-          two_man_timer[source] = doors[source].Local_param[LPRM_TWO_MAN_WINDOW] * 10;
-          first_key[source] = key_record[source];
-          if (two_man_timer[source] == 0)
-            {
-            two_man_timer[source] = 100;
-            }
-          two_man_count[source] = 1;
-          return;
-          }
-        else 
-          {
-          two_man_count[source] = 0;
-          two_man_first[source] = 0;
-          if ((dual_reader && key_code[source] != (first_key[source].Code)) ||
-              (!dual_reader && key_code[source] == (first_key[source].Code))
-             )
-            {
-            return;
-            }
-          key_record[source] = first_key[source];
-          }
-        }
-      else if (test_door_flag(source, LFLAG_DELAYED))
-        {
-        if (!delayed_open_state[source])  // start delay?
-          {
-          delayed_open_timer[source] = doors[source].Local_param[LPRM_DELAYED_OPEN];
-          delayed_open_state[source] = 1;
-          set_led(source, LMODE_SLOW);
-          
-          return;
-          }
-        }
       
-      two_man_count[source] = 0;
-      
-      if (test_door_flag(source, LFLAG_INTERLOCK))
-        {
-        interlock = interlock_disable_unlock[source];
-        if (interlock)
-          {
-          generate_event(source, key_record[source].ID, key_code[source], EVT_Unlock_not_permitted);
-          if (test_door_flag(source, LFLAG_SHORT_REJECT_BEEPS))
-            {
-            set_buzzer(source, BZMODE_4_BEEPS);
-            }
-          return;
-          }
-        }
       
       // tag found
       // check if PIN code needed
-      if (!pin_only_mode(source) && test_door_flag(source, LFLAG_PIN_CODE))
-        {
-        start_pin_code_wait(source, index, &key_record[source]);
-        return;
-        }
       
-      tag_approved:
-      ClearReader2(source);
-      
-      if (test_door_flag(source, LFLAG_EXIT) || second_reader)                           // is this door an exit door?
-        { // this is an exit                                                            // YES.
-        if (test_door_flag(source, (LFLAG_HARD_APB|LFLAG_SOFT_APB)))
-          {
-          APB_counter = get_apb_counter(index);
-          if (test_door_flag(source, LFLAG_HARD_APB))                   // hard APB does no allow exit if no entry executed previously
-            {
-            if (APB_counter & (APB_EXIT_FLAG))
-              {
-              generate_event(source, key_record[source].ID, key_code[source], EVT_APB_key_blocked);// YES. do not allow entry
-              if (test_door_flag(source, LFLAG_SHORT_REJECT_BEEPS))
-                {
-                set_buzzer(source, BZMODE_4_BEEPS);
-                }
-              two_man_timer[source] = 0;
-              two_man_count[source] = 0;
-              return;
-              }
-            }
-          APB_counter = APB_EXIT_FLAG; // set counter;
-          set_apb_counter(index, APB_counter);
-          }
-        
-        if (global_variable[GVAR_UPDOWN_CTR])                         // down count entry/exit counter
-          {
-          global_variable[GVAR_UPDOWN_CTR]--;
-          }
-        
-        generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Exit);      // generate exit event
-
-        if (dual_presence_feature_enabled(source))
-          {
-          if (people_inside[source])
-            {
-            // decrement counter
-            if (--people_inside[source] == 1) // if no person or more than 1 person inside, there is no problem
-              {                               // if this is the first to enter, set a timer
-              first_person_timer[source] = 80; // to 8 seconds, to allow 2nd person to exit
-              }
-            else if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH) && people_inside[source] == 0)
-              {
-              movement_timer[source] = -1; // count to 10 seconds on exit of last person
-              }
-            }
-          else
-            {
-            // nobody was inside to begin with. ALARM
-            }
-          }
-        
-        
-        if (test_door_flag(source,  LFLAG_TRAFFIC_LT))                  // does this door participate in traffic control?
-          {
-          if (doors[source].Local_param[LPRM_TRAFFIC_COUNT])                      // YES. decrement occupancy counter
-            {
-            doors[source].Local_param[LPRM_TRAFFIC_COUNT]--;
-            update_locals_in_eeprom = 10;
-            //            update_all_doors(doors[source].Local_param[LPRM_TRAFFIC_COUNT]);
-            if (doors[source].Local_param[LPRM_TRAFFIC_COUNT] < doors[source].Local_param[LPRM_TRAFFIC_THRESH])
-              {
-              operate_aux(source, 0);                                             // turn off red light
-              }
-            }
-          }
-        }
-      else // this is an entry
-        {
-        if (test_door_flag(source, LFLAG_HARD_APB|LFLAG_SOFT_APB))
-          {
-          APB_counter = get_apb_counter(index);
-          if (APB_counter & (APB_ENTRY_FLAG))
-            {
-            generate_event(source, key_record[source].ID, key_code[source], EVT_APB_key_blocked);// YES. do not allow entry
-            if (test_door_flag(source, LFLAG_SHORT_REJECT_BEEPS))
-              {
-              set_buzzer(source, BZMODE_4_BEEPS);
-              }
-            two_man_timer[source] = 0;
-            two_man_count[source] = 0;
-            return;
-            }
-          APB_counter = APB_ENTRY_FLAG; // set counter;
-          set_apb_counter(index, APB_counter);
-          }
-        
-        flag = doors[source].Flags & LFLAG_DONT_COUNT;
-        if ((flag) == 0L)
-          {
-          if (key_record[source].Flags & KFLAG_EntryLimit)
-            {
-            count = make8(key_record[source].ID, 3); // get counter
-            if (!count)
-              {
-              generate_event(source, key_record[source].ID, key_code[source], EVT_Key_timed_out);
-              if (test_door_flag(source, LFLAG_SHORT_REJECT_BEEPS))
-                {
-                set_buzzer(source, BZMODE_4_BEEPS);
-                }
-              two_man_timer[source] = 0;
-              two_man_count[source] = 0;
-              return;
-              }
-            }
-          }
-        global_variable[GVAR_UPDOWN_CTR]++;                           // up count entry/exit counter
-        
-        
-        
-        if (test_door_flag(source,  LFLAG_TRAFFIC_LT))                  // does this door participate in traffic control?
-          {
-          current_count = doors[source].Local_param[LPRM_TRAFFIC_COUNT];
-          threshold = doors[source].Local_param[LPRM_TRAFFIC_THRESH];
-          if (current_count >= threshold)                   // YES. have we reach maximum allowed occupancy?
-            {
-            if (key_record[source].Flags & KFLAG_Master)
-              {
-              goto open_gate;
-              }
-            operate_aux(source, 0xFFFF);                                            // YES. turn on red light
-            generate_event(source, key_record[source].ID, key_code[source], EVT_Traffic_limit);// YES. do not allow entry
-            if (test_door_flag(source, LFLAG_SHORT_REJECT_BEEPS))
-              {
-              set_buzzer(source, BZMODE_4_BEEPS);
-              }
-            goto yellow;
-            }
-          else
-            {
-            open_gate:
-            two_man_timer[source] = 0;
-            two_man_count[source] = 0;
-            current_count = ++doors[source].Local_param[LPRM_TRAFFIC_COUNT];
-            update_locals_in_eeprom = 10;
-            if (current_count >= threshold)                 // have we reach maximum allowed occupancy?
-              {
-              operate_aux(source, 0xFFFF);                                            // YES. turn on red light
-              generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Entry);
-              }
-            goto exec_unlock;
-            }
-          }
-        
-        
-        // final selection of entry/exit mode
-        if (!dual_reader)
-          {
-          two_man_timer[source] = 0;
-          two_man_count[source] = 0;
           generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Entry);
-          }
-        else
-          {
-          if (!second_reader)
-            { // this is reader 1 for ENTRY
-            generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Entry);
-            if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH))
-              {
-              movement_timer[source] = 15 * 60 * 10; // set time to 15 minutes
-              }
-            if (dual_presence_feature_enabled(source))
-              {
-              // increment counter
-              if (++people_inside[source] > 1)
-                {
-                first_person_timer[source] = 0; // zero out timer
-                first_in_the_morning_timer[source] = 0;
-                }
-              else
-                {
-                first_person_timer[source] = 80; // set to 8 seconds, to allow 2nd person to enter
-                if (test_door_flag(source, LFLAG_DUAL_ONCE_PER_DAY))
-                  {
-                  first_in_the_morning_timer[source] = 600; // set timer to 60 seconds
-                  }
-                }
-              }
-            }
-          else
-            { // this is reader 2 for EXIT
-            ClearReader2(source);
-            generate_event(source, key_record[source].ID, key_code[source], EVT_Valid_Exit);
-            if (dual_presence_feature_enabled(source))
-              {
-              if (people_inside[source])
-                {
-                // decrement counter
-                if (--people_inside[source] == 1) // if no person or more than 1 person inside, there is no problem
-                  {                               // if this is the first to enter, set a timer
-                  first_person_timer[source] = 80; // to 8 seconds, to allow 2nd person to exit
-                  }
-                else if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH) && people_inside[source] == 0)
-                  {
-                  movement_timer[source] = -1; // count to 10 seconds on exit of last person
-                  }
-                }
-              else
-                {
-                // nobody was inside to begin with. ALARM
-                }
-              }
-            }
-          }
-        
-        if (count)
-          {
-          key_record[source].ID -= 0x01000000L; // decrement counter
-          DB_store_key(&key_record[source], index);
-          }
-        }
 exec_unlock:
       two_man_timer[source] = 0;
       two_man_count[source] = 0;
@@ -1007,7 +696,7 @@ void handle_keys(void)
     check_first_person_timers();
     dead_man_switch_handling();
     
-    scan_keys = MAX_DOORS;
+    scan_keys = 63;
     if (++scan_delayed_10 >= 100) // scan timers once every 10 seconds
       {
       scan_delayed_10 = 0;

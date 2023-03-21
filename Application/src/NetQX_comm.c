@@ -142,7 +142,7 @@ bool SendToGK(u8 dest, u8 source, u32 length)
   comm_tbuf[0] = PREAMBLE0;                     // 0 preamble 2 bytes
   comm_tbuf[1] = PREAMBLE1;                     // 1
   comm_tbuf[2] = dest;                          // 2 send to destination
-  comm_tbuf[3] = source + MyAddress;
+  comm_tbuf[3] = source;
   comm_tbuf[4] = 0;                             // 4 future use
   comm_tbuf[5] = 0;                             // 5
 
@@ -922,71 +922,73 @@ void remote_unlock(u16 addressed_door)
   u32 current_time = RTC_compute_absolute_time();
   last_function = 31;
   
-  if (elevator_system)
-    {
-    energize_single_floor_relay(addressed_door);
-    generate_event(addressed_door, 0, 0, EVT_Remote_open);
-    return;
-    }
-
-  if (fire_condition[addressed_door])
-    {
-    return;
-    }
-
-  bx = get_short(); // get operation
-  if (addressed_door == prev_door && prev_op == bx && current_time - prev_time < 6)
-    {
-    return;
-    }
-  
-  prev_time = current_time;
-  prev_door = addressed_door;
-  prev_op = bx;
-  
-//  if (!auto_unlocked[addressed_door])
-    {
-    if (!bx)
-      {
-      relock(addressed_door);
-      }
-    else
-      {
-      if (bx == 255)
-        {
-        unlock_door(addressed_door);
-        unlock10[addressed_door] = 65535;
-        generate_event(addressed_door, 0, 0, EVT_RemoteLeaveDoorOpen);
-        }
-      else if (bx == 254)
-        {
-        if (enable_first_user[addressed_door])
-          {
-          unlock_door(addressed_door);
-          enable_first_user[addressed_door] = 0;
-          auto_unlocked[addressed_door] = 1;
-          generate_event(addressed_door, 0, 0, EVT_Auto_door_open);
-          }
-        }
-      else if (bx == 252)
-        {
-        enable_unlock(addressed_door);
-        }
-      else if (bx == 253)
-        {
-        disable_unlock(addressed_door);
-        }
-      else
-        {
-        if (unlock10[addressed_door] == 0)
-          {
-          generate_event(addressed_door, 0, 0, EVT_Remote_open);
-          }
-        unlock_door(addressed_door);
-        unlock10[addressed_door] = bx * 10;
-        }
-      }
-    }
+  send_locker_unlock_command(addressed_door+1);
+  generate_event(addressed_door+1, 0, 0, EVT_Remote_open);
+//  if (elevator_system)
+//    {
+//    energize_single_floor_relay(addressed_door);
+//    generate_event(addressed_door, 0, 0, EVT_Remote_open);
+//    return;
+//    }
+//
+//  if (fire_condition[addressed_door])
+//    {
+//    return;
+//    }
+//
+//  bx = get_short(); // get operation
+//  if (addressed_door == prev_door && prev_op == bx && current_time - prev_time < 6)
+//    {
+//    return;
+//    }
+//  
+//  prev_time = current_time;
+//  prev_door = addressed_door;
+//  prev_op = bx;
+//  
+////  if (!auto_unlocked[addressed_door])
+//    {
+//    if (!bx)
+//      {
+//      relock(addressed_door);
+//      }
+//    else
+//      {
+//      if (bx == 255)
+//        {
+//        unlock_door(addressed_door);
+//        unlock10[addressed_door] = 65535;
+//        generate_event(addressed_door, 0, 0, EVT_RemoteLeaveDoorOpen);
+//        }
+//      else if (bx == 254)
+//        {
+//        if (enable_first_user[addressed_door])
+//          {
+//          unlock_door(addressed_door);
+//          enable_first_user[addressed_door] = 0;
+//          auto_unlocked[addressed_door] = 1;
+//          generate_event(addressed_door, 0, 0, EVT_Auto_door_open);
+//          }
+//        }
+//      else if (bx == 252)
+//        {
+//        enable_unlock(addressed_door);
+//        }
+//      else if (bx == 253)
+//        {
+//        disable_unlock(addressed_door);
+//        }
+//      else
+//        {
+//        if (unlock10[addressed_door] == 0)
+//          {
+//          generate_event(addressed_door, 0, 0, EVT_Remote_open);
+//          }
+//        unlock_door(addressed_door);
+//        unlock10[addressed_door] = bx * 10;
+//        }
+//      }
+//    }
   }
 
 //----------------------------------------------------------------------------

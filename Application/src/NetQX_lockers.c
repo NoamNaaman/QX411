@@ -7,7 +7,7 @@
 
 #define X16PREAMB '#'
 
-#define __STID_GOV_RDR__ 1
+#define __STID_GOV_RDR__ 0
 
 
 
@@ -182,9 +182,9 @@ void process_iox16(void)
         addr &= 127;
 
 #if __STID_GOV_RDR__ == 1
-        STid_tag = make32(reader_data[0][0], reader_data[0][1], reader_data[0][2], reader_data[0][3]);
+        STid_tag = make32(reader_data[0][1], reader_data[0][2], reader_data[0][3], reader_data[0][4]);
         STid_tag <<= 1; // shift left
-        STid_site = STid_tag >> 24; // isolate site code
+        STid_site = (STid_tag) >> 24; // isolate site code
         STid_tag = (STid_tag & 0x00FFFF00) >> 8;
         STid_tag += STid_site * 100000;
         tag = STid_tag;
