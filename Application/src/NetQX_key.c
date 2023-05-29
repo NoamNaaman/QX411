@@ -41,6 +41,17 @@ bool dual_presence_feature_enabled(u32 source)
   }
 
 //--------------------------------------------------------------------------
+bool dead_man_feature_enabled(u32 source)
+  {
+  if (test_door_flag(source, LFLAG_2RDR_SINGLE_DOOR) &&    // apply input from two reader to a single door
+      test_door_flag(source, LFLAG_DEAD_MAN_SWITCH))       // room behind door with entry/exit readers 
+    {
+    return true;
+    }
+  return false;
+  }
+
+//--------------------------------------------------------------------------
 void handle_invalid_door(u32 source)
   {
   two_man_timer[source] = 0;
@@ -699,6 +710,10 @@ continue_checking:
             // nobody was inside to begin with. ALARM
             }
           }
+        else if (dead_man_feature_enabled(source))
+          {
+          movement_timer[source] = 0;
+          }
         
         
         if (test_door_flag(source,  LFLAG_TRAFFIC_LT))                  // does this door participate in traffic control?
@@ -924,6 +939,11 @@ void movement_detected(u32 source)
   if (people_inside[source] == 0 && movement_timer[source] < -100) // nobody is supposed to be in the room. ALARM
     {
     generate_event(source, 0, 0, EVT_burglary);
+    operate_aux(source, 600); // turn aux relay on for 60 seconds
+    }
+  if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH))
+    {
+    movement_timer[source] = 15 * 60 * 10; // set time to 15 minutes
     }
   }
 

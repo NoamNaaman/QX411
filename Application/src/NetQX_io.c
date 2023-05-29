@@ -17,6 +17,7 @@ u32   dip_switches;
 
 
 extern ADC_HandleTypeDef hadc1;
+extern s32 movement_timer[MAX_DOORS];
 
 //#define JSH_DOOR_CLOSED 133
 //
@@ -626,7 +627,18 @@ void handle_rte(void)
     if (test_door_flag(rte_idx, LFLAG_2RDR_SINGLE_DOOR) &&
         test_door_flag(rte_idx, LFLAG_DEAD_MAN_SWITCH)) 
       {
-      movement_detected(rte_idx);
+      if (movement_timer[rte_idx] != 0)
+        {
+        movement_detected(rte_idx);
+        }
+      else
+        {
+        if (aux_timer[rte_idx] == 0)
+          {
+          generate_event(rte_idx, 0, 0, EVT_burglary);
+          operate_aux(rte_idx, 600); // turn aux relay on for 60 seconds
+          }
+        }
       }
     else
       {
