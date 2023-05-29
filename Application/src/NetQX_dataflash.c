@@ -26,6 +26,7 @@ u16 g_u16NorFlashRegState;
 
 volatile u8 *g_pFlashReadDestPtr;
 
+u32 ee_type;
 
 u32 base_doors_setup = 0x8000;
 
@@ -99,8 +100,11 @@ void init_ports(void)
 void SelectFlashCS(u32 address)
   {
   init_ports();
-  address >>= 17; // get 2 device select bits
-  FlashChipSelect = address & 3;
+  if (ee_type == 1)
+    {
+    address >>= 17; // get 2 device select bits
+    FlashChipSelect = address & 3;
+    }
   }
 
 /////////////////////////////////////////////////////////////////////
@@ -378,7 +382,7 @@ void  FlashReadChipId(u8* pB)
   g_u8SpiOneTxBuff[M95M01_ADDR_MID] = (u8)(u32Add >> 8);
   g_u8SpiOneTxBuff[M95M01_ADDR_BOT] = (u8)(u32Add >> 0);
   g_u32SpiOneTxLen = FLASH_SPI_SERVICE_INFO;
-  g_u32SpiOneRxLen = 512;
+  g_u32SpiOneRxLen = 8;
   
   g_pFlashReadDestPtr = pB;
   
@@ -620,14 +624,20 @@ void  InitExtFlash(void)
 /////////////////////////////////////////////////////////////////////
 void FlashChipEnable(void)
   {
-  output_low(EECS1);
-//  switch (FlashChipSelect)
-//    {
-//    case 0: output_low(EECS1); break;
-//    case 1: output_low(EECS2); break;
-//    case 2: output_low(EECS3); break;
-//    case 3: output_low(EECS4); break;
-//    }
+  if (ee_type == 4)
+    {
+    output_low(EECS1);
+    }
+  else
+    {
+    switch (FlashChipSelect)
+      {
+      case 0: output_low(EECS1); break;
+      case 1: output_low(EECS2); break;
+      case 2: output_low(EECS3); break;
+      case 3: output_low(EECS4); break;
+      }
+    }
   }
 
 /////////////////////////////////////////////////////////////////////
@@ -761,6 +771,103 @@ void read_ext_eeprom(u8 caller, u32 address, u8 *data, u16 len)
   FlashReadData(address, len, data);
   }
 
+
+/////////////////////////////////////////////////////////////////////
+// Name:        
+// Description: 
+// Parameters:  
+// Returns:     NONE
+/////////////////////////////////////////////////////////////////////
+void check_read_write(u8 *TxBuff, u8 *RxBuff, u32 TxLen, u32 RxLen)
+  {
+  HAL_SPI_Transmit(&hspi1, TxBuff, TxLen, TxLen);
+  if (RxLen)
+    {
+    HAL_SPI_TransmitReceive(&hspi1, TxBuff, RxBuff, RxLen, 100);
+    }
+  delay_us(1);
+  }
+
+/////////////////////////////////////////////////////////////////////
+// Name:        
+// Description: 
+// Parameters:  
+// Returns:     NONE
+/////////////////////////////////////////////////////////////////////
+void check_ee_type_read(void)
+  {
+  u32 u32Add = 131072 - 256; // end of 515K byte space - 256 bytes
+  g_u8SpiOneTxBuff[FLASH_SPI_OFFSET_CMND ] = FLASH_READ_DATA_CMND;
+  g_u8SpiOneTxBuff[M95M01_ADDR_TOP] = (u8)(u32Add >> 16);
+  g_u8SpiOneTxBuff[M95M01_ADDR_MID] = (u8)(u32Add >> 8);
+  g_u8SpiOneTxBuff[M95M01_ADDR_BOT] = (u8)(u32Add >> 0);
+//  g_u8SpiOneTxBuff[FLASH_SPI_4OFFSET_DATA] = 0;
+  g_u32SpiOneTxLen = FLASH_SPI_SERVICE_INFO;
+  g_u32SpiOneRxLen = 8;
+  
+//  g_pFlashReadDestPtr = DestBuffer;
+
+  output_low(EECS4);
+  check_read_write(g_u8SpiOneTxBuff, g_u8SpiOneRxBuff, g_u32SpiOneTxLen, g_u32SpiOneRxLen); 
+  output_high(EECS4);
+  }
+
+/////////////////////////////////////////////////////////////////////
+// Name:        
+// Description: 
+// Parameters:  
+// Returns:     NONE
+/////////////////////////////////////////////////////////////////////
+void check_ee_type_write(void)
+  {
+  u32 u32Add = 131072 - 256; // end of 515K byte space - 256 bytes
+  g_u8SpiOneTxBuff[FLASH_SPI_OFFSET_CMND ] = FLASH_WRITE_PAGE_CMND;
+  g_u8SpiOneTxBuff[M95M01_ADDR_TOP] = (u8)(u32Add >> 16);
+  g_u8SpiOneTxBuff[M95M01_ADDR_MID] = (u8)(u32Add >> 8);
+  g_u8SpiOneTxBuff[M95M01_ADDR_BOT] = (u8)(u32Add >> 0);
+  g_u8SpiOneTxBuff[M95M01_ADDR_BOT+1] = 1;
+  g_u8SpiOneTxBuff[M95M01_ADDR_BOT+2] = 2;
+  g_u8SpiOneTxBuff[M95M01_ADDR_BOT+3] = 3;
+  g_u8SpiOneTxBuff[M95M01_ADDR_BOT+4] = 7;
+//  g_u8SpiOneTxBuff[FLASH_SPI_4OFFSET_DATA] = 0;
+  g_u32SpiOneTxLen = FLASH_SPI_SERVICE_INFO + 4;
+  g_u32SpiOneRxLen = 0;
+  
+//  g_pFlashReadDestPtr = DestBuffer;
+
+  output_drive(SF_WP);
+  output_high(SF_WP);
+
+  output_low(EECS4);
+  check_read_write(g_u8SpiOneTxBuff, g_u8SpiOneRxBuff, g_u32SpiOneTxLen, g_u32SpiOneRxLen); 
+  output_high(EECS4);
+  }
+
+/////////////////////////////////////////////////////////////////////
+// Name:        
+// Description: 
+// Parameters:  
+// Returns:     NONE
+/////////////////////////////////////////////////////////////////////
+void check_ee_type(void)
+  {
+  ee_type = 4;
+  check_ee_type_read();
+  if (g_u8SpiOneRxBuff[0] == 1 && g_u8SpiOneRxBuff[3] == 7) 
+    {
+    ee_type = 1;
+    }
+  else
+    {
+    check_ee_type_write();
+    check_ee_type_read();
+    if (g_u8SpiOneRxBuff[0] == 1 && g_u8SpiOneRxBuff[3] == 7) 
+      {
+      ee_type = 1;
+      }
+    }
+  }
+
 /////////////////////////////////////////////////////////////////////
 // Name:        
 // Description: 
@@ -776,6 +883,8 @@ void init_eeprom(void)
 //  FlashReadChipId(buf);
 //  delay_us(500);
 //  FlashWriteChipId(addr, len, buf);
+//  check_ee_type();
+
   __NOP();
   }
 
