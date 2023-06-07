@@ -221,11 +221,21 @@ typedef __packed struct {
 #define MAX_EVENTS             4096
 
 
+typedef __packed struct {
+       u32 Code;
+       u32 ID;
+       u16  PIN;
+       u16  FmDate;
+       u16  ToDate;
+       u8 Flags;
+       u8 al[2];
+       } KEY_RECORD;
+
 //============ serial EEPROM addresses ====================
 #define ADDR_SETUP         16
 #define ADDR_TEST         240
 #define ADDR_KEYS         256
-#define ADDR_DOORS        (((u32)ADDR_KEYS + MAX_KEY_RECORDS * 256 + 256) & 0xFFFFFF00L) // 0x42800
+#define ADDR_DOORS        (((u32)ADDR_KEYS + MAX_KEY_RECORDS * sizeof(KEY_RECORD) + 256) & 0xFFFFFF00L) // 0x42800
 #define ADDR_TZ           ((ADDR_DOORS + MAX_DOORS * sizeof(DOOR_RECORD) + 256) & 0xFFFFFF00L)
 #define ADDR_AL           ((ADDR_TZ + MAX_TZ * sizeof(WZ_RECORD) + 256) & 0xFFFFFF00L)
 #define ADDR_HOLIDAY      ((ADDR_AL + MAX_AL * sizeof(AL_RECORD) + 256) & 0xFFFFFF00L)
@@ -243,15 +253,6 @@ typedef struct {
        u8 create_seq;
        } SETUP_RECORD;
 
-typedef __packed struct {
-       u32 Code;
-       u32 ID;
-       u16  PIN;
-       u16  FmDate;
-       u16  ToDate;
-       u8 Flags;
-       u8 al[2];
-       } KEY_RECORD;
 
 // Special flags
 #define KFLAG_Master                  1         // overrides all restrictions. USE WITH CARE.

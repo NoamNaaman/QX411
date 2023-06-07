@@ -624,20 +624,20 @@ void  InitExtFlash(void)
 /////////////////////////////////////////////////////////////////////
 void FlashChipEnable(void)
   {
-  if (ee_type == 4)
+//  if (ee_type == 4)
     {
     output_low(EECS1);
     }
-  else
-    {
-    switch (FlashChipSelect)
-      {
-      case 0: output_low(EECS1); break;
-      case 1: output_low(EECS2); break;
-      case 2: output_low(EECS3); break;
-      case 3: output_low(EECS4); break;
-      }
-    }
+//  else
+//    {
+//    switch (FlashChipSelect)
+//      {
+//      case 0: output_low(EECS1); break;
+//      case 1: output_low(EECS2); break;
+//      case 2: output_low(EECS3); break;
+//      case 3: output_low(EECS4); break;
+//      }
+//    }
   }
 
 /////////////////////////////////////////////////////////////////////
