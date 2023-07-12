@@ -830,12 +830,12 @@ continue_checking:
               if (++people_inside[source] > 1)
                 {
                 first_person_timer[source] = 0; // zero out timer
-                first_in_the_morning_timer[source] = 0;
+//                first_in_the_morning_timer[source] = 0;
                 }
               else
                 {
-                first_person_timer[source] = 80; // set to 8 seconds, to allow 2nd person to enter
-                if (test_door_flag(source, LFLAG_DUAL_ONCE_PER_DAY))
+                first_person_timer[source] = 150; // set to 15 seconds, to allow 2nd person to enter
+                if (test_door_flag(source, LFLAG_DUAL_ONCE_PER_DAY) && first_in_the_morning_timer[source] == 0)
                   {
                   first_in_the_morning_timer[source] = 600; // set timer to 60 seconds
                   }
@@ -936,12 +936,20 @@ exec_unlock:
 //--------------------------------------------------------------------------
 void movement_detected(u32 source)
   {
+//  if (people_inside[source] == 0 && movement_timer[source] < 0) // nobody is supposed to be in the room. ALARM
+//    {
+//    __NOP();
+//    }
+//  else 
   if (people_inside[source] == 0 && movement_timer[source] < -100) // nobody is supposed to be in the room. ALARM
     {
-    generate_event(source, 0, 0, EVT_burglary);
-    operate_aux(source, 600); // turn aux relay on for 60 seconds
+    if (aux_timer[source] == 0)
+      {
+      generate_event(source, 0, 0, EVT_burglary);
+      operate_aux(source, 600); // turn aux relay on for 60 seconds
+      }
     }
-  if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH))
+  if (test_door_flag(source, LFLAG_DEAD_MAN_SWITCH) && movement_timer[source] >= 0)
     {
     movement_timer[source] = 15 * 60 * 10; // set time to 15 minutes
     }
@@ -976,7 +984,7 @@ void check_first_person_timers(void)
   u32 room;
   for (room = 0; room < MAX_DOORS; room++)
     {
-    if (first_person_timer[room]) // timer is active?
+    if (first_in_the_morning_timer[room] <= 1 && first_person_timer[room]) // timer is active?
       {
       if (--first_person_timer[room] == 0) // timer timed out?
         {
@@ -986,9 +994,9 @@ void check_first_person_timers(void)
           }
         }
       }
-    if (first_in_the_morning_timer[room])
+    if (first_in_the_morning_timer[room] > 1)
       {
-      if (--first_in_the_morning_timer[room] == 0)
+      if (--first_in_the_morning_timer[room] == 1)
         {
         if (people_inside[room] == 1)
           {

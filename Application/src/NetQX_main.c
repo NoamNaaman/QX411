@@ -24,6 +24,7 @@ extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern IWDG_HandleTypeDef hiwdg;
 extern SPI_HandleTypeDef hspi1;
+extern u32 first_in_the_morning_timer[MAX_DOORS];
 
 
 u16  event_index, event_counter;
@@ -332,7 +333,7 @@ void write_door_setup(u8 door)
 //    write_ext_eeprom(ADDR_DOORS + door * sizeof(DOOR_RECORD), (u8 *)&dr, sizeof(DOOR_RECORD));
 rewrite:
     write_ext_eeprom(ADDR_DOORS + door * sizeof(DOOR_RECORD), (u8 *)&dr, sizeof(DOOR_RECORD));
-    delay_ms(5);
+    delay_ms(10);
     read_ext_eeprom(0, ADDR_DOORS + door * sizeof(DOOR_RECORD), (u8 *)&dr2, sizeof(DOOR_RECORD));
     if (memcmp((const void *)&dr, (const void *)&dr2, sizeof(DOOR_RECORD)))
       {
@@ -655,6 +656,17 @@ void update_date_time(void)
         if (sys_date_time.minute > 55 && sys_date_time.hour == 23)
           {
           clear_apb_table = 1;
+          }
+        }
+      if (sys_date_time.minute == 59 && sys_date_time.hour == 23 && 
+          sys_date_time.second >= 40)
+        {
+        for (u32 idx = 0; idx < MAX_DOORS; idx++)
+          {
+          if (first_in_the_morning_timer[idx] == 1)
+            {
+            first_in_the_morning_timer[idx] = 0;
+            }
           }
         }
       }

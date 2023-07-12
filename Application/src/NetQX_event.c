@@ -94,7 +94,7 @@ void generate_event(u8 source, u32 ID, u32 kcode, u8 event)
   addr = compute_event_address(event_index);
 rewrite:
   write_ext_eeprom(addr, (u8 *)&evt, EVENT_REC_SIZE);
-  delay_ms(5);
+  delay_ms(10);
   read_ext_eeprom(EE_LEV, addr, (u8 *)&evt2, EVENT_REC_SIZE);
   if (memcmp((u8 *)&evt, (u8 *)&evt2, EVENT_REC_SIZE))
     {

@@ -239,6 +239,7 @@ u8 WGND_wait(u32 reader)
         digit = reader_data[reader][0];
         reader_data[reader][0] = 0;
         digit >>= 4;
+        digit ^= 0x0F;
         BitCnt[reader] = 0;
         if (digit < 10) 
           {     // 0 to 9

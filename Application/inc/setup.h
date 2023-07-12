@@ -26,7 +26,10 @@
 
 
 
-#define SW_VERSION 224
+#define SW_VERSION 227
+// 227 2023-06-20 fixed contention between dual presence and dead man on exit delay and beyond
+// 226 2023-06-11 no real change. just made sure dual presence works with dead man switch
+// 225 2023-06-07 fixed G1 first in the morning, memory allocation error
 // 224 2023-04-30 fixed G1 features
 // 223 2023-01-16 added G1 features
 // 222 2022-12-12 changed pin code from left justified HEX number to decimal (NetQX_wiegand.c)
@@ -221,23 +224,6 @@ typedef __packed struct {
 #define MAX_EVENTS             4096
 
 
-//============ serial EEPROM addresses ====================
-#define ADDR_SETUP         16
-#define ADDR_TEST         240
-#define ADDR_KEYS         256
-#define ADDR_DOORS        (((u32)ADDR_KEYS + MAX_KEY_RECORDS * 256 + 256) & 0xFFFFFF00L) // 0x42800
-#define ADDR_TZ           ((ADDR_DOORS + MAX_DOORS * sizeof(DOOR_RECORD) + 256) & 0xFFFFFF00L)
-#define ADDR_AL           ((ADDR_TZ + MAX_TZ * sizeof(WZ_RECORD) + 256) & 0xFFFFFF00L)
-#define ADDR_HOLIDAY      ((ADDR_AL + MAX_AL * sizeof(AL_RECORD) + 256) & 0xFFFFFF00L)
-#define ADDR_DZ           (ADDR_HOLIDAY + 48)
-#define ADDR_EVTPTR       (((ADDR_DZ + MAX_DZ * sizeof(DZ_RECORD))+ 256) & 0xFFFFFF00L)
-#define ADDR_EVENTS       (((u32)ADDR_EVTPTR + 1024) & 0xFFFFFF00L)
-//#define ADDR_EVTPTR       (0x78000)
-//#define ADDR_EVENTS       (0x78100)
-#define ADDR_LAST         (ADDR_EVENTS + MAX_EVENTS * sizeof(EVENT_RECORD) + 256)
-
-extern u32 base_doors_setup;
-
 
 typedef struct {
        u8 create_seq;
@@ -262,6 +248,26 @@ typedef __packed struct {
 #define KFLAG_NoExit                 32         // do not allow exit to this user
 #define KFLAG_EntryLimit             64         // If Count = zero, do not allow entry. decrement Count byte for each entry
 #define KFLAG_PersonalAL            128         // user has a personal access level attached.
+
+
+//============ serial EEPROM addresses ====================
+#define ADDR_SETUP         16
+#define ADDR_TEST         240
+#define ADDR_KEYS         256
+#define ADDR_DOORS        (((u32)ADDR_KEYS + MAX_KEY_RECORDS * sizeof(KEY_RECORD) + 256) & 0xFFFFFF00L) // 0x42800
+#define ADDR_TZ           ((ADDR_DOORS + MAX_DOORS * sizeof(DOOR_RECORD) + 256) & 0xFFFFFF00L)
+#define ADDR_AL           ((ADDR_TZ + MAX_TZ * sizeof(WZ_RECORD) + 256) & 0xFFFFFF00L)
+#define ADDR_HOLIDAY      ((ADDR_AL + MAX_AL * sizeof(AL_RECORD) + 256) & 0xFFFFFF00L)
+#define ADDR_DZ           (ADDR_HOLIDAY + 48)
+#define ADDR_EVTPTR       (((ADDR_DZ + MAX_DZ * sizeof(DZ_RECORD))+ 256) & 0xFFFFFF00L)
+#define ADDR_EVENTS       (((u32)ADDR_EVTPTR + 1024) & 0xFFFFFF00L)
+//#define ADDR_EVTPTR       (0x78000)
+//#define ADDR_EVENTS       (0x78100)
+#define ADDR_LAST         (ADDR_EVENTS + MAX_EVENTS * sizeof(EVENT_RECORD) + 256)
+
+extern u32 base_doors_setup;
+
+
 
 //========= lock setup =========================================
 
@@ -333,7 +339,7 @@ typedef struct  {
 
 
 //============ serial RAM addresses ========================
-#define ADDR_EVENT_FL_INDEX     32  // 2 byte address of next FLASH block to be filled with events
+//#define ADDR_EVENT_FL_INDEX     32  // 2 byte address of next FLASH block to be filled with events
 
 //====== I/O definitions ===================================
 //u8 analog_samples[64], analog_x = 0;

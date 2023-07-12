@@ -624,8 +624,7 @@ void handle_rte(void)
       goto next_door;
       }
     
-    if (test_door_flag(rte_idx, LFLAG_2RDR_SINGLE_DOOR) &&
-        test_door_flag(rte_idx, LFLAG_DEAD_MAN_SWITCH)) 
+    if (dead_man_feature_enabled(rte_idx)) 
       {
       if (movement_timer[rte_idx] != 0)
         {
