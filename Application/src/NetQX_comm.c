@@ -154,7 +154,7 @@ bool COM1_send_packet(u8 dest, u8 source, u32 length)
   comm_tbuf[0] = PREAMBLE0;                     // 0 preamble 2 bytes
   comm_tbuf[1] = PREAMBLE1;                     // 1
   comm_tbuf[2] = dest;                          // 2 send to destination
-  comm_tbuf[3] = source + MyAddress;
+  comm_tbuf[3] = source + MyAddress;            // 3
   comm_tbuf[4] = 0;                             // 4 future use
   comm_tbuf[5] = 0;                             // 5
 
