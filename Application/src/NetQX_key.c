@@ -120,15 +120,27 @@ bool check_time_zone(u16 tzn)
 //--------------------------------------------------------------------------
 void enable_floor(u32 floor)
   {
-  if (floor >= 4) // is this an aux relay?
+//  if (floor >= 4) // is this an aux relay?
+//    {
+//    operate_aux(floor - 4, doors[0].Unlock_time);
+//    }
+//  else
+//    {
+//    operate_lock(floor, 1);
+//    unlock10[floor] = doors[0].Unlock_time;
+//    }
+
+  if ((floor & 1) == 0)
     {
-    operate_aux(floor - 4, doors[0].Unlock_time);
+    operate_lock(floor >> 1, 1);
+    unlock10[floor >> 1] = doors[0].Unlock_time;
     }
   else
     {
-    operate_lock(floor, 1);
-    unlock10[floor] = doors[0].Unlock_time;
+    operate_aux((floor >> 1), doors[0].Unlock_time);
     }
+  
+  
   }
 
 

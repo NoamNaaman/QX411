@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 227
+#define SW_VERSION 228
+// 228 2023-08-28 fixed enable_floor() in elevator/locker operation
 // 227 2023-06-20 fixed contention between dual presence and dead man on exit delay and beyond
 // 226 2023-06-11 no real change. just made sure dual presence works with dead man switch
 // 225 2023-06-07 fixed G1 first in the morning, memory allocation error
@@ -232,11 +233,11 @@ typedef struct {
 typedef __packed struct {
        u32 Code;
        u32 ID;
-       u16  PIN;
-       u16  FmDate;
-       u16  ToDate;
-       u8 Flags;
-       u8 al[2];
+       u16 PIN;
+       u16 FmDate;
+       u16 ToDate;
+       u8  Flags;
+       u8  al[2];
        } KEY_RECORD;
 
 // Special flags
