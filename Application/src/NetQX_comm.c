@@ -243,18 +243,18 @@ void COM1_send_string(u8 *bp)
   }
 
 //-----------------------------------------------------------------------------
-void  COM1_send_ack(u8 source, u8 Destination)
+void  COM1_send_ack(u8 source, u8 Destination, u8 msg_no_l, u8 msg_no_h)
   {
   u8 next, *bp, comm_tbuf[16];
   u16 length;
    last_function = 6;
   comm_tbuf[0] = PREAMBLE0;                     // 0 preamble 2 bytes
   comm_tbuf[1] = PREAMBLE1;                     // 1
-  comm_tbuf[2] = Destination;                   // 2 send to EIM-1
-  comm_tbuf[3] = source;                        // 3 from device 0
+  comm_tbuf[2] = Destination;                   // 2 send to 
+  comm_tbuf[3] = source;                        // 3 from device 
 
-  comm_tbuf[4] = 0;                             // 4 future use
-  comm_tbuf[5] = 0;                             // 5
+  comm_tbuf[4] = msg_no_l;                      // 4 return PC message number
+  comm_tbuf[5] = msg_no_h;                      // 5
 
   comm_tbuf[6] = 0xAC;                          // 6
   comm_tbuf[7] = 'K' ;                          // 7
@@ -1239,7 +1239,7 @@ bool process_message(void)
       {
 //      if (!elevator_system)
         {
-        COM1_send_ack(comm_buf[2], comm_buf[3]);
+        COM1_send_ack(comm_buf[2], comm_buf[3], comm_buf[4], comm_buf[5]);
         }
       if (latest_message_crc == previous_message_crc && prev_msg_timer)
         {

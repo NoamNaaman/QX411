@@ -2,6 +2,8 @@
 
 #include "setup.h"
 
+#define __OLD_2_AL__ 0
+
 bool valid_door_found;
 u32 latest_key_data, key_checked;
 
@@ -263,8 +265,9 @@ bool allowed_to_open(u8 source, KEY_RECORD *key_rec)
       }
     }
   
-  from = key_rec->FmDate & 0x3FFF;
-  to   = key_rec->ToDate & 0x3FFF;
+  to   = key_rec->ToDate;
+#if __OLD_2_AL__ == 1
+  from = key_rec->FmDate;
   if (from && from != 0xFFFF &&  from <= to)
     {
     today = RTC_ComputeDay(&sys_date_time);             // check if from/to date is OK
@@ -278,6 +281,18 @@ bool allowed_to_open(u8 source, KEY_RECORD *key_rec)
       return 0;
       }
     }
+#else // new 4 AL system
+  today = RTC_ComputeDay(&sys_date_time);             // check if from/to date is OK
+  if (today > to)
+    {
+    generate_event(source, key_rec->ID, key_rec->Code, EVT_Invalid_from_to_date);
+    if (test_door_flag(source, LFLAG_SHORT_REJECT_BEEPS))
+      {
+      set_buzzer(source, BZMODE_4_BEEPS);
+      }
+    return 0;
+    }
+#endif
   return 1;
   }
 
@@ -570,40 +585,26 @@ void process_key(u32 source, u32 key, u16 special)
       handle_elevator(&key_record[source]);
       return;
       }
-    
+
+#if __OLD_2_AL__ == 1
     if (check_access_level((u16)source, (u16)key_record[source].al[0]))
       {
       goto continue_checking;
       }
     
-/*    if (!elevator_system && personal) ////// testing ONLY 2 DOORS?
-      {
-      if (source)
-        {
-        mask = 0x8000;
-        }
-      else
-        {
-        mask = 0x4000;
-        }
-      if (key_record[source].FmDate & mask)
-        {
-        valid_door_found = 1;
-        if (check_time_zone(key_record[source].al[1]))
-          {
-          goto continue_checking;
-          }
-        }
-      else
-        {
-invalid_door:
-        handle_invalid_door(source);
-        }
-      goto yellow;
-      }
-    else */
     if (key_record[source].al[1] > 0 && key_record[source].al[1] < MAX_AL && 
         check_access_level((u16)source, (u16)key_record[source].al[1]))
+#else // new 4 AL system
+    u8 AL_result[4];
+    u8 AL3, AL4;
+    AL3 = key_record[source].FmDate & 255;
+    AL4 = key_record[source].FmDate >> 8;
+    AL_result[0] = check_access_level((u16)source, (u16)key_record[source].al[0]);
+    AL_result[1] = check_access_level((u16)source, (u16)key_record[source].al[1]);
+    AL_result[2] = check_access_level((u16)source, AL3);
+    AL_result[3] = check_access_level((u16)source, AL4);
+    if (AL_result[0] || AL_result[1] || AL_result[2] || AL_result[3])
+#endif
       {
 continue_checking:
       if (test_door_flag(source, LFLAG_TWO_MAN))

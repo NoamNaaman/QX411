@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 229
+#define SW_VERSION 230
+// 230 2023-12-20 first version to implement 4 ALs
 // 229 2023-11-22 reversed DIP switch polarity
 // 228 2023-08-28 fixed enable_floor() in elevator/locker operation
 // 227 2023-06-20 fixed contention between dual presence and dead man on exit delay and beyond
