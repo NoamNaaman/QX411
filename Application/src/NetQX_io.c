@@ -96,23 +96,23 @@ u8 get_address(void)
   input_pullup(DIP7);
   
   addr = 0;
-  if (input(DIP3))
+  if (!input(DIP3))
     {
     addr |= 4;
     }
-  if (input(DIP4))
+  if (!input(DIP4))
     {
     addr |= 8;
     }
-  if (input(DIP5))
+  if (!input(DIP5))
     {
     addr |= 16;
     }
-  if (input(DIP6))
+  if (!input(DIP6))
     {
     addr |= 32;
     }
-  if (input(DIP7))
+  if (!input(DIP7))
     {
     addr |= 64;
     }

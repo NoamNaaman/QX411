@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 228
+#define SW_VERSION 229
+// 229 2023-11-22 reversed DIP switch polarity
 // 228 2023-08-28 fixed enable_floor() in elevator/locker operation
 // 227 2023-06-20 fixed contention between dual presence and dead man on exit delay and beyond
 // 226 2023-06-11 no real change. just made sure dual presence works with dead man switch

@@ -1013,6 +1013,23 @@ void check_for_system_resets_on_powerup(void)
   rdr4_active = rdr4;
   }
 
+void toggle_led1(void)
+  {
+  u32 period = 30, loop, time;
+  for (loop = 0; loop < 1000; loop++)
+    {
+    
+    for (time = 0; time < 300; time++) 
+      {
+      led_onoff(0,1);
+      delay_us(period);
+      led_onoff(0,0);
+      delay_us(period);
+      }
+    period += 10;
+    }
+  }
+
 //=============================================================================
 void Init_APP_main(void)
   {
@@ -1023,6 +1040,8 @@ void Init_APP_main(void)
   
   output_high(LED_RED);
   output_high(LED_GREEN);
+  
+//  toggle_led1();
 
   delay_ms(1000);
 
