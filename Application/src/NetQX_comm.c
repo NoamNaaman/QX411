@@ -14,6 +14,7 @@ u16 no_comm_timer;
 
 u16  prev_messages[32];
 u16 prev_sources[32], pmx;
+u16 latest_msessage_number;
 
 u16 event_detected, ack_detected;
 u16 delay_events = 0;
@@ -155,8 +156,8 @@ bool COM1_send_packet(u8 dest, u8 source, u32 length)
   comm_tbuf[1] = PREAMBLE1;                     // 1
   comm_tbuf[2] = dest;                          // 2 send to destination
   comm_tbuf[3] = source + MyAddress;            // 3
-  comm_tbuf[4] = 0;                             // 4 future use
-  comm_tbuf[5] = 0;                             // 5
+  comm_tbuf[4] = latest_msessage_number % 256;
+  comm_tbuf[5] = latest_msessage_number / 256;
 
   comm_tbuf[6] = length - 7;                        // 6
   crc = CalculateCRC(comm_tbuf, length);
@@ -243,7 +244,7 @@ void COM1_send_string(u8 *bp)
   }
 
 //-----------------------------------------------------------------------------
-void  COM1_send_ack(u8 source, u8 Destination, u8 msg_no_l, u8 msg_no_h)
+void  COM1_send_ack(u8 source, u8 Destination, u8 msg_no_h, u8 msg_no_l)
   {
   u8 next, *bp, comm_tbuf[16];
   u16 length;
@@ -256,6 +257,8 @@ void  COM1_send_ack(u8 source, u8 Destination, u8 msg_no_l, u8 msg_no_h)
   comm_tbuf[4] = msg_no_l;                      // 4 return PC message number
   comm_tbuf[5] = msg_no_h;                      // 5
 
+  latest_msessage_number = ((u16)msg_no_h << 8) | (u16)msg_no_l;
+  
   comm_tbuf[6] = 0xAC;                          // 6
   comm_tbuf[7] = 'K' ;                          // 7
 
