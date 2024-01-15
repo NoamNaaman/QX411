@@ -908,7 +908,7 @@ void put_short(u8 dat);
 
 #define ANALOG_FIRE 0
 #define ANALOG_TAMPER 1
-#define ANALOG_SINGLE_DOOR 2
+#define ANALOG_2AL_COMPATIBILITY 2
 #define ANALOG_RDR4 3
 
 

@@ -19,6 +19,7 @@ u32 first_person_timer[MAX_DOORS]; // for dual presence feature
 u32 first_in_the_morning_occur[MAX_DOORS];
 u32 first_in_the_morning_timer[MAX_DOORS];
 bool reset_first_in_the_morning = true;
+bool al_allows_access;
 
 s32 movement_timer[MAX_DOORS];
 
@@ -266,7 +267,9 @@ bool allowed_to_open(u8 source, KEY_RECORD *key_rec)
     }
   
   to   = key_rec->ToDate;
-#if __OLD_2_AL__ == 1
+//#if __OLD_2_AL__ == 1
+  if (analog_values[ANALOG_2AL_COMPATIBILITY] < 500)
+    {
   from = key_rec->FmDate;
   if (from && from != 0xFFFF &&  from <= to)
     {
@@ -281,7 +284,10 @@ bool allowed_to_open(u8 source, KEY_RECORD *key_rec)
       return 0;
       }
     }
-#else // new 4 AL system
+    }
+//#else // new 4 AL system
+  else
+    {
   today = RTC_ComputeDay(&sys_date_time);             // check if from/to date is OK
   if (today > to)
     {
@@ -292,7 +298,8 @@ bool allowed_to_open(u8 source, KEY_RECORD *key_rec)
       }
     return 0;
     }
-#endif
+    }
+//#endif
   return 1;
   }
 
@@ -462,6 +469,37 @@ bool DposControlAllowsUnlock(u32 source)
   return true;
   }
 
+
+//--------------------------------------------------------------------------
+bool check_2_ALs(u32 source)
+  {
+  if (check_access_level((u16)source, (u16)key_record[source].al[0]) ||
+        (key_record[source].al[1] > 0 && check_access_level((u16)source, (u16)key_record[source].al[1]))
+        )
+    {
+    return true;
+    }
+  return false;
+  }
+
+//--------------------------------------------------------------------------
+bool check_4_ALs(u32 source)
+  {
+  u8 AL_result[4];
+  u8 AL3, AL4;
+  AL3 = key_record[source].FmDate & 255;
+  AL4 = key_record[source].FmDate >> 8;
+  AL_result[0] = check_access_level((u16)source, (u16)key_record[source].al[0]);
+  AL_result[1] = check_access_level((u16)source, (u16)key_record[source].al[1]);
+  AL_result[2] = check_access_level((u16)source, AL3);
+  AL_result[3] = check_access_level((u16)source, AL4);
+  if (AL_result[0] || AL_result[1] || AL_result[2] || AL_result[3])
+    {
+    return true;
+    }
+  return false;
+  }
+
 //--------------------------------------------------------------------------
 void process_key(u32 source, u32 key, u16 special)
   {
@@ -586,25 +624,19 @@ void process_key(u32 source, u32 key, u16 special)
       return;
       }
 
-#if __OLD_2_AL__ == 1
-    if (check_access_level((u16)source, (u16)key_record[source].al[0]))
+    al_allows_access = false;
+    if (analog_values[ANALOG_2AL_COMPATIBILITY] < 500)
       {
-      goto continue_checking;
+//#if __OLD_2_AL__ == 1
+      al_allows_access = check_2_ALs(source);
       }
-    
-    if (key_record[source].al[1] > 0 && key_record[source].al[1] < MAX_AL && 
-        check_access_level((u16)source, (u16)key_record[source].al[1]))
-#else // new 4 AL system
-    u8 AL_result[4];
-    u8 AL3, AL4;
-    AL3 = key_record[source].FmDate & 255;
-    AL4 = key_record[source].FmDate >> 8;
-    AL_result[0] = check_access_level((u16)source, (u16)key_record[source].al[0]);
-    AL_result[1] = check_access_level((u16)source, (u16)key_record[source].al[1]);
-    AL_result[2] = check_access_level((u16)source, AL3);
-    AL_result[3] = check_access_level((u16)source, AL4);
-    if (AL_result[0] || AL_result[1] || AL_result[2] || AL_result[3])
-#endif
+    else
+//#else // new 4 AL system
+      {
+      al_allows_access = check_4_ALs(source);
+      }
+//#endif
+    if (al_allows_access)
       {
 continue_checking:
       if (test_door_flag(source, LFLAG_TWO_MAN))
@@ -899,7 +931,7 @@ exec_unlock:
         {
         set_buzzer(source, BZMODE_ON);
         }
-      }
+      } // end of access level check
     else // door open rejected
       {
       two_man_timer[source] = 0;

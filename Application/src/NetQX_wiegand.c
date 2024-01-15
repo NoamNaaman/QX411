@@ -291,7 +291,21 @@ u8 WGND_wait(u32 reader)
       reader_data[reader][idx] ^= 0xFF;
       }
     
-    tag = extract_wiegand_key(doors[reader].First_digit, doors[reader].Number_of_digits, &reader_data[reader][0]);
+    u32 num_digits = doors[reader].Number_of_digits, first_digit = doors[reader].First_digit;
+    if (doors[reader].Number_of_digits == 29)
+      {
+      if (BitCnt[reader] == 32)
+        {
+        num_digits = 32;
+        first_digit = 1;
+        }
+      else
+        {
+        num_digits = 24;
+        first_digit = 2;
+        }
+      }
+    tag = extract_wiegand_key(first_digit, num_digits, &reader_data[reader][0]);
     if (mul_t_lock)
       {
       kswitch[0] = make8(tag, 2);
