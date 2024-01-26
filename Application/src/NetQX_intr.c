@@ -285,9 +285,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
   if (htim->Instance == TIM1)
     {
-    output_high(ETH_RST);
+//    output_high(ETH_RST_RS485EN);
     CheckWiegandRdrD1b();
-    output_low(ETH_RST);
+//    output_low(ETH_RST_RS485EN);
     }
   
   if (htim->Instance == TIM4)

@@ -40,22 +40,22 @@ void send_locker_unlock_time(void);
 void enable_floor(u32 floor);
 u32 RTC_compute_absolute_time(void);
 
-void reset_lantronix(void)
-  {
-  output_drive(ETH_RST);
-  output_low(ETH_RST);
-  delay_ms(100);
-  output_high(ETH_RST);
-  delay_ms(100);
-  }
+//void reset_lantronix(void)
+//  {
+//  output_drive(ETH_RST_RS485EN);
+//  output_low(ETH_RST_RS485EN);
+//  delay_ms(100);
+//  output_high(ETH_RST_RS485EN);
+//  delay_ms(100);
+//  }
 /*
 void test_ethernet(void)
   {
   u8 x;
-  output_drive(ETH_RST);
-  output_low(ETH_RST);
+  output_drive(ETH_RST_RS485EN);
+  output_low(ETH_RST_RS485EN);
   delay_ms(100);
-  output_high(ETH_RST);
+  output_high(ETH_RST_RS485EN);
   delay_ms(100);
   U4TXREG = 'X';
   delay_ms(400);

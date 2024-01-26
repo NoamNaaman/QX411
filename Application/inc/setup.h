@@ -26,7 +26,8 @@
 
 
 
-#define SW_VERSION 230
+#define SW_VERSION 231
+// 231 2024-01-15 analog input 3 short reverts to 2 AL system, door with number of bits = 29, will check for HID/STid 26/32 bit output
 // 230 2023-12-20 first version to implement 4 ALs
 // 229 2023-11-22 reversed DIP switch polarity
 // 228 2023-08-28 fixed enable_floor() in elevator/locker operation
@@ -472,7 +473,7 @@ extern bool MCR_TrackOne1[MAX_DOORS]; //     ; // = RDRstate1.5 // collect track
 
 
 
-#define ETH_RST             GPIOD,3
+#define ETH_RST_RS485EN      GPIOD,3
 
 #define DIP3                 GPIOE,3
 #define DIP4                 GPIOE,4

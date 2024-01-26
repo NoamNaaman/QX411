@@ -1386,6 +1386,9 @@
                     </excluded>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\Application\src\NetQX_selftest.c</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\Application\src\NetQX_serial.c</name>
                 </file>
                 <file>

@@ -1089,6 +1089,48 @@ void check_tamper(void)
   }
 
 //--------------------------------------------------------------------------
+u32 get_reader_d0(u32 reader)
+  {
+  u32 level;
+  switch (reader)
+    {
+    case 0: level = input(RDR1_D0); break; 
+    case 1: level = input(RDR2_D0); break; 
+    case 2: level = input(RDR3_D0); break; 
+    case 3: level = input(RDR4_D0); break; 
+    }
+  return level;
+  }
+
+//--------------------------------------------------------------------------
+u32 get_reader_d1(u32 reader)
+  {
+  u32 level;
+  switch (reader)
+    {
+    case 0: level = input(RDR1_D1); break; 
+    case 1: level = input(RDR2_D1); break; 
+    case 2: level = input(RDR3_D1); break; 
+    case 3: level = input(RDR4_D1); break; 
+    }
+  return level;
+  }
+
+//--------------------------------------------------------------------------
+u32 get_reader_2nd_d1(u32 reader)
+  {
+  u32 level;
+  switch (reader)
+    {
+    case 0: level = input(RDR1_D1b); break; 
+    case 1: level = input(RDR2_D1b); break; 
+    case 2: level = input(RDR3_D1b); break; 
+    case 3: level = input(RDR4_D1b); break; 
+    }
+  return level;
+  }
+
+//--------------------------------------------------------------------------
 void clear_reader_outputs(void)
   {
   output_low(RDR_BUZZER1);

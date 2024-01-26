@@ -738,157 +738,6 @@ void init_variables(void)
 
 
 //=============================================================================
-void show_fault(u8 fault)
-  {
-  u16 loop;
-//#ignore_warnings 203
-  while (1)
-    {
-    for (loop = 0; loop < fault; loop++)
-      {
-      if (loop > 4)
-        {
-        output_high(LED_GREEN);
-        }
-      else
-        {
-        output_high(LED_RED);
-        }
-//      setup_buzzer(1);
-      delay_ms(350);
-//      setup_buzzer(0);
-      output_low(LED_GREEN);
-      output_low(LED_RED);
-      delay_ms(750);
-      }
-    delay_ms(1500);
-    }
-  }
-
-//=============================================================================
-void test_all_off(void)
-  {
-  u32 door;
-  for (door = 0; door < 4; door++)
-    {
-    operate_lock(door, 0);
-    operate_aux(door, 0);
-    led_onoff(door, 0);
-    door_buzzer(door, 0);
-    }
-  }
-
-void self_test(void)
-  {
-  u8 buf1[32], buf2[32], n;
-  u16 x;//, xx, rly;
-//  u32 addr;
-  DATE_TIME dt, sdt;
-
-  output_low(LED_GREEN);
-  output_low(LED_RED);
-
-  test_all_off();
-
-  for (x = 0; x < 2; x++)
-    {
-    memset(buf1, 0x77 + x * 3, 32);
-    memset(buf2, 0x11, 32);
-    write_ext_eeprom(ADDR_TEST, buf1, 32);
-    delay_ms(6);
-    read_ext_eeprom(EE_TST, ADDR_TEST, buf2, 32);
-    if (buf2[30] != buf1[30])
-      show_fault(2);
-    }
-
-  RTC_load_date_time();
-  memcpy(&sdt, &sys_date_time, sizeof(DATE_TIME));
-  dt.year = 10;
-  dt.month = 3;
-  dt.day = 15;
-  dt.hour = 20;
-  dt.minute = 30;
-  dt.second = 10;
-  RTC_store_date_time(&dt);
-  delay_ms(2200);
-  RTC_load_date_time();
-  if (sys_date_time.second < dt.second + 2)
-    show_fault(3);
-  RTC_store_date_time(&sdt);
-
-  test_all_off();
-  delay_ms(1000);
-
-  get_analog_inputs();
-
-  operate_lock(0, 1);
-  delay_ms(50);
-  get_analog_inputs();
-  if (analog_values[4] > 128)
-    show_fault(4);
-  operate_aux(0, 1);
-  delay_ms(50);
-  get_analog_inputs();
-  if (analog_values[5] > 128)
-    show_fault(5);
-
-  test_all_off();
-
-  operate_lock(1, 1);
-  delay_ms(50);
-  get_analog_inputs();
-  if (analog_values[6] > 128)
-    show_fault(6);
-  operate_aux(1, 1);
-  delay_ms(50);
-  get_analog_inputs();
-  if (analog_values[7] > 128)
-    show_fault(7);
-
-  test_all_off();
-
-  for (x = 0; x < 2; x++)
-    {
-    n = get_reader_interrupts(x);
-    if (n != 3)
-      {
-      show_fault(8+x);
-      }
-    led_onoff(x, 1);
-    delay_ms(1);
-    n = get_reader_interrupts(x);
-    if (n != 0)
-      {
-      show_fault(10+x);
-      }
-    test_all_off();
-    }
-
-  for (x = 0; x < 2; x++)
-    {
-    test_all_off();
-    delay_ms(40);
-    get_analog_inputs();
-    door_buzzer(x, 1);
-    delay_ms(5);
-    get_analog_inputs();
-    if (analog_values[x*2] > 128 || analog_values[x*2+1] > 128)
-      {
-      show_fault(12+x);
-      }
-    delay_ms(5);
-    }
-
-  test_all_off();
-
-  output_high(LED_GREEN);
-  delay_ms(5000);
-//  setup_buzzer(0);
-  x++;
-  x++;
-  }
-
-//=============================================================================
 void test_comm(void)
   {
   u32 dly = 0;
@@ -947,19 +796,6 @@ void test_eeproms(void)
   }
 
 //=============================================================================
-bool get_reader_d1(u32 reader)
-  {
-  switch (reader)
-    {  
-    case 0: return input(RDR1_D1); break;
-    case 1: return input(RDR2_D1); break;
-    case 2: return input(RDR3_D1); break;
-    case 3: return input(RDR4_D1); break;
-    } 
-  return 0;
-  }
-
-//=============================================================================
 bool test_reader_loopback(u32 reader)
   {
   led_onoff(reader, 1);
@@ -992,21 +828,21 @@ void check_for_system_resets_on_powerup(void)
   {
   u32 rdr4 = rdr4_active;
   rdr4_active = 1; // disable while loop on inputs
-  if (test_reader_loopback(0))
+  if (test_reader_loopback(3))  //loop on reader 4
+    {
+    ict_self_test();
+    }
+  else if (test_reader_loopback(0))//loop on reader 1
     {  // clear event buffer
     erase_events();
     }
-  else if (test_reader_loopback(1))
+  else if (test_reader_loopback(1))//loop on reader 2
     {  // clear user database and restore defaults
     store_mfg_defaults();
     erase_keys_in_DB();
     DB_erase_Al_wk_dy();
     }
-  else if (test_reader_loopback(2))
-    {
-    test_comm(); // send unlock message to door 1 and wait for ACK
-    }
-  else if (test_reader_loopback(3))
+  else if (test_reader_loopback(2))//loop on reader 3
     {
     clear_door1_flags();
     }
