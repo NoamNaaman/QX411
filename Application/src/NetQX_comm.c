@@ -39,6 +39,7 @@ void send_locker_unlock_command(u32 door);
 void send_locker_unlock_time(void);
 void enable_floor(u32 floor);
 u32 RTC_compute_absolute_time(void);
+void ETH_send_char(u8 chr);
 
 //void reset_lantronix(void)
 //  {
@@ -128,10 +129,10 @@ u8 CommGetChar(void)
 void transmit_char(u16 chr)
   {
   last_function = 2;
-  ETHR_send_char(chr);
+  RS485_send_char(chr);
   if (!elevator_system)  
     {
-    USART1->DR = chr; // send to RS485 with no delays since ETHR_send_char() already does
+    USART1->DR = chr; // send to RS485 with no delays since RS485_send_char() already does
     }
   }
 
@@ -1690,3 +1691,20 @@ void GKP_comm_handler(void)
     }
   }
 
+//-----------------------------------------------------------------------------
+void ETH_send_string(u8 *str)
+  {
+  while (*str)
+    {
+    ETH_send_char(*str++);
+    }
+  }
+
+void ETH_send_string_test(void)
+  {
+  ETH_send_string("AT+E\r");  delay_ms(1000);
+  ETH_send_string("AT+VER\r");  delay_ms(1000);
+  ETH_send_string("AT+UART=38400,8,1,NONE,0,0\r");  delay_ms(1000);
+  ETH_send_string("AT+MAC\r");  delay_ms(1000);
+//  ETH_send_string("AT+VER?\r");  delay_ms(1000);
+  }

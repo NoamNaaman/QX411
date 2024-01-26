@@ -58,6 +58,7 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+uint32_t eth_baud = 38400;
 
 /* USER CODE END PV */
 
@@ -653,7 +654,7 @@ void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 38400;
+  huart2.Init.BaudRate = eth_baud;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -881,8 +882,9 @@ void InitWDG(void)
   }
 
   
-void initUart2(void)
+void initUart2(uint32_t baud)
   {
+  eth_baud = baud;
   MX_USART2_UART_Init();
   }
 

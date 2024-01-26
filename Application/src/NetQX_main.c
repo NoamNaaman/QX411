@@ -126,6 +126,9 @@ u32 seconds_from_reset;
 
 u32 elevator_system;
 
+u32 main_baud, test_eth = 0;
+
+
 extern u32 key_delay_timer[];
 
 
@@ -228,6 +231,7 @@ extern u16  relay_pulse[MAX_DOORS];
 
 //=========== communications ==============================-
 #define PC_COM_BUF_SIZE 64
+void ETH_send_string(u8 *str);
 
 
 //======== prototypes =============================================
@@ -974,16 +978,47 @@ void APP_main(void)
   
   TestMemory();
 
-  initUart2();
+  main_baud = 38400;
+  initUart2(main_baud);
 
   u8 chr = USART2->DR;
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_RXNE);
   __HAL_UART_ENABLE_IT(&huart2, UART_IT_RXNE);
 
+//  output_high(ETH_RST_RS485EN);
+//  output_drive(ETH_RST_RS485EN);
+//  delay_ms(10);
+//  output_low(ETH_RST_RS485EN);
+//  delay_ms(250);
+//  output_high(ETH_RST_RS485EN);
+//  delay_ms(1050);
+
+//  output_high(ETH_CS);
+//  output_drive(ETH_CS);
+//  output_low(ETH_CS);
+//  delay_ms(250);
+//  output_high(ETH_CS);
+//  delay_ms(1050);
   
+//  ETH_send_string("+++");
+//  delay_ms(250);
+  ETH_send_string("+++");
+//  ETH_send_char('+'); delay_ms(1);
+//  ETH_send_char('+'); delay_ms(1);
+//  ETH_send_char('+'); delay_ms(1);
+//  ETH_send_char('a'); delay_ms(1);
+  delay_ms(1000);
+  ETH_send_char('a'); delay_ms(1);
+//  ETH_send_string("AT+VER=?\x0d");
+
   while (1)
     {
     main_loop_counter++;
+    
+    if (test_eth)
+      {
+      ETH_send_string_test();
+      }
     
     background_tasks();
     if ((Timer_5mS_Flags & Tmr_5mS_TOGGLE_LED))

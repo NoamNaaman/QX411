@@ -343,9 +343,17 @@ void flush_rx_buffer(u32 channel)
   }
 
 //=============================================================================
-void ETHR_send_char(u8 chr)
+void RS485a_send_char(u8 chr)
   {
   //USART2->DR = chr;
+  HAL_UART_Transmit(&huart2, &chr, 1, 1);
+  while (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) == RESET);
+  delay_us(100);
+  }
+
+//=============================================================================
+void ETH_send_char(u8 chr)
+  {
   HAL_UART_Transmit(&huart2, &chr, 1, 1);
   while (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) == RESET);
   delay_us(100);

@@ -882,7 +882,7 @@ bool check_eeprom_address(void);
 void init_eeprom(void);
 void RTC_store_date_time(DATE_TIME *idt);
 void RTC_load_date_time(void);
-void ETHR_send_char(u8 chr);
+void RS485_send_char(u8 chr);
 void RS485_send_char(u8 chr);
 bool check_time_zone(u16 tzn);
 u8 MCR_wait_magcard(u32 reader);
