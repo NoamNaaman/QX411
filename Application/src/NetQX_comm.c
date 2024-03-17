@@ -502,16 +502,15 @@ bool get_key_record(KEY_RECORD *kr, u32 *ID, u32 *kcode)
     l = count;
     u.ID |= l << 24;
     }
-  if (u.Flags & KFLAG_PersonalAL)   // save personal doors in FmDate field bits 14,15
+  if (u.Flags & KFLAG_PersonalAL)  
     {
-    addr = MyAddress - 1;
+    addr = (MyAddress - 1) ;
     bx = addr >> 3;
     doors = comm_buf[next_inbyte + bx];
     addr &= 7;
-    doors <<= 14 - addr;
-    u.FmDate |= doors;
+//    doors <<= 14 - addr;
+//    u.FmDate |= doors;
     }
-//  u.create_seq = global_setup.create_seq;
   memcpy(kr, &u, sizeof(u));
   return 1;
   }

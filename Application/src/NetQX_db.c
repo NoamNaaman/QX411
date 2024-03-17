@@ -1,5 +1,6 @@
 #include "main.h"
 #include "setup.h"
+#include "string.h"
 
 void InitWDG(void);
 

@@ -287,7 +287,7 @@ extern u16 global_variable[GLOBAL_VARIABLES];
 
 #define LOCAL_PARAMETERS     16
 #define LPRM_TWO_MAN_WINDOW   0
-#define LPRM_DELAYED_OPEN     1
+#define LPRM_DELAYED_OPEN     14
 #define LPRM_TRAFFIC_THRESH   2
 #define LPRM_TRAFFIC_COUNT    3
 #define LPRM_XFLAGS           4

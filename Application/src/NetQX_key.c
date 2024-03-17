@@ -486,11 +486,13 @@ bool check_2_ALs(u32 source)
 bool check_4_ALs(u32 source)
   {
   u8 AL_result[4];
-  u8 AL3, AL4;
+  u8 AL1, AL2, AL3, AL4;
+  AL1 = (u16)key_record[source].al[0];
+  AL2 = (u16)key_record[source].al[1];
   AL3 = key_record[source].FmDate & 255;
   AL4 = key_record[source].FmDate >> 8;
-  AL_result[0] = check_access_level((u16)source, (u16)key_record[source].al[0]);
-  AL_result[1] = check_access_level((u16)source, (u16)key_record[source].al[1]);
+  AL_result[0] = check_access_level((u16)source, AL1);
+  AL_result[1] = check_access_level((u16)source, AL2);
   AL_result[2] = check_access_level((u16)source, AL3);
   AL_result[3] = check_access_level((u16)source, AL4);
   if (AL_result[0] || AL_result[1] || AL_result[2] || AL_result[3])
